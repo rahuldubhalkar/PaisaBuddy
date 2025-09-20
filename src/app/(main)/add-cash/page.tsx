@@ -17,7 +17,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { usePortfolio } from '@/components/portfolio-provider';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 type PaymentMethod = 'Credit / Debit Card' | 'UPI / Bank';
 type PageState = 'enterAmount' | 'cardPayment' | 'otpVerification' | 'upiPayment' | 'processing' | 'success';
@@ -37,8 +36,6 @@ export default function AddCashPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { addCash } = usePortfolio();
-
-  const qrCodePlaceholder = PlaceHolderImages.find(p => p.id === 'qr-code');
 
   const handleMethodSelect = (paymentMethod: PaymentMethod) => {
     const numericAmount = parseFloat(amount);
@@ -246,11 +243,9 @@ export default function AddCashPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="p-4 rounded-lg bg-secondary flex flex-col items-center gap-4">
-                {qrCodePlaceholder && (
-                  <Image src={qrCodePlaceholder.imageUrl} alt="Mock QR Code" width={150} height={150} data-ai-hint={qrCodePlaceholder.imageHint} className="rounded-md" />
-                )}
+                <Image src="/images/upi-qr-code.png" alt="Mock QR Code" width={150} height={150} className="rounded-md" />
                 <div className="text-center">
-                  <p className="font-semibold">paisa-buddy-payments@okhdfcbank</p>
+                  <p className="font-semibold">rahulldubhalkar-1@okaxis</p>
                   <p className="text-sm text-muted-foreground">Click to copy</p>
                 </div>
                 <p className="text-lg font-bold">Amount: ₹{parseFloat(amount).toLocaleString('en-IN')}</p>

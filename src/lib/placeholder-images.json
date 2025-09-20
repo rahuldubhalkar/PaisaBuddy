@@ -23,12 +23,6 @@
       "description": "A padlock on a digital screen, symbolizing fraud protection and cybersecurity.",
       "imageUrl": "https://media.istockphoto.com/id/2218954745/photo/scam-alert-warning-with-cybersecurity-icons-man-holding-smartphone-while-using-laptop-warning.webp?a=1&b=1&s=612x612&w=0&k=20&c=rPOhSLL51hbJAoYeYEkb65gHAQtcYCvyqmfearf3t3w=",
       "imageHint": "cyber security"
-    },
-    {
-      "id": "qr-code",
-      "description": "A mock QR code for simulated UPI payments.",
-      "imageUrl": "https://picsum.photos/seed/qrcode/150/150",
-      "imageHint": "qr code"
     }
   ]
 }
