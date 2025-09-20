@@ -161,7 +161,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
                     asChild
                   >
                     <Link href="/">
-                      <Logo className="h-6 w-6" />
+                      <Logo className="h-12 w-18" />
                       <span className="sr-only">Paisa Buddy</span>
                     </Link>
                   </Button>

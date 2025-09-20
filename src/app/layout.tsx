@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 export const metadata: Metadata = {
   title: 'Paisa Buddy',
   description: 'Your personal guide to financial literacy in India.',
+  icons: {
+    icon: 'https://media.istockphoto.com/id/2164714606/vector/cartoon-retro-groovy-dollars-stack-funky-character.jpg?s=612x612&w=0&k=20&c=Qh7trW4LHoiP9eNTwMiQgDK5_Zio-r83UNKG97DDRGY=',
+  },
 };
 
 export default function RootLayout({
