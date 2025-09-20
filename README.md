@@ -1,8 +1,4 @@
-# Firebase Studio
 
-This is a NextJS starter in Firebase Studio.
-
-To get started, take a look at src/app/page.tsx.
 
 # Paisabuddy: Financial Literacy for Young India
 
@@ -32,4 +28,5 @@ Paisabuddy is a mobile-first financial literacy platform tailored for young Indi
         1.Android Stdio
         2.Firebase console
         3.Gemini api
+
         4.OpenAi
