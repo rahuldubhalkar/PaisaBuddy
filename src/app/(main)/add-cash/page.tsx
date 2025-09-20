@@ -243,7 +243,7 @@ export default function AddCashPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="p-4 rounded-lg bg-secondary flex flex-col items-center gap-4">
-                <Image src="/image.png"  width={150} height={150} alt="QR Code" className="rounded-md bg-white p-2" />
+                <Image src="https://media.istockphoto.com/id/1364214436/vector/qr-code-for-scanning-with-a-smartphone-on-a-white-background-a-set-of-qr-codes-for.jpg?s=612x612&w=0&k=20&c=V-n335hA33_S0iY_2zG3h3E0aS0m0sD0-M3iH5x0_0k="  width={150} height={150} alt="QR Code" className="rounded-md bg-white p-2" />
                 <div className="text-center">
                   <p className="font-semibold">rahulldubhalkar-1@okaxis</p>
                   <p className="text-sm text-muted-foreground">Click to copy</p>
