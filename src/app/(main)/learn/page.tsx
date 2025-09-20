@@ -44,22 +44,28 @@ export default function LearnPage() {
           return (
           <Card key={module.id} className="flex flex-col">
             <CardHeader>
-              <div className="flex items-center gap-4">
+              <div className="flex items-start gap-4">
                 <div className="bg-primary/10 p-3 rounded-full">
                   {Icon && <Icon className="h-6 w-6 text-primary" />}
                 </div>
-                <CardTitle>{module.title}</CardTitle>
+                <div className='flex-1'>
+                  <CardTitle className="text-lg">{module.title}</CardTitle>
+                   <CardDescription className="pt-2">
+                    {module.description}
+                  </CardDescription>
+                </div>
               </div>
-              <CardDescription className="pt-2">
-                {module.description}
-              </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Progress</span>
-                <span>{module.progress}%</span>
-              </div>
-              <Progress value={module.progress} className="mt-2" />
+               {module.progress > 0 && (
+                <>
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>Progress</span>
+                    <span>{module.progress}%</span>
+                  </div>
+                  <Progress value={module.progress} className="mt-2" />
+                </>
+              )}
             </CardContent>
             <CardFooter>
               <Button asChild className="w-full">
