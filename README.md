@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-
-
 # Paisabuddy: Financial Literacy for Young India
 
 1.Problem Statement
@@ -31,6 +28,7 @@ Paisabuddy is a mobile-first financial literacy platform tailored for young Indi
         3.Gemini api
 
         4.OpenAi
+
 =======
 # Paisabuddy: Financial Literacy for Young India
 
