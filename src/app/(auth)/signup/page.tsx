@@ -30,7 +30,7 @@ const formSchema = z.object({
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signUp } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -56,18 +56,6 @@ export default function SignUpPage() {
       }
     }
   }
-  
-  async function handleGoogleSignIn() {
-    setError(null);
-    try {
-      await signInWithGoogle();
-      router.push('/');
-    } catch (err: any) {
-        setError('Failed to sign in with Google. Please try again.');
-        console.error(err);
-    }
-  }
-
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -136,21 +124,6 @@ export default function SignUpPage() {
             </form>
           </Form>
           
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
-            Google
-          </Button>
-
           <p className="mt-4 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
             <Link href="/login" passHref>

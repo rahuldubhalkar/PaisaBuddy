@@ -9,12 +9,11 @@ import {
     signInWithEmailAndPassword,
     signOut as firebaseSignOut,
     sendPasswordResetEmail,
-    GoogleAuthProvider,
-    signInWithPopup,
     updateProfile,
     Auth,
-    getRedirectResult,
-    signInWithRedirect,
+    sendSignInLinkToEmail,
+    isSignInWithEmailLink,
+    signInWithEmailLink as firebaseSignInWithEmailLink,
 } from 'firebase/auth';
 import { firebaseApp } from '@/lib/firebase';
 import { getFirestore, doc, setDoc, getDoc, Firestore } from 'firebase/firestore';
@@ -26,13 +25,20 @@ interface AuthContextType {
   signUp: (name: string, email: string, pass: string) => Promise<any>;
   signOut: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
-  signInWithGoogle: () => Promise<any>;
+  signInWithEmailLink: (email: string) => Promise<void>;
+  handleSignInWithEmailLink: (url: string) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
+
+const actionCodeSettings = {
+  url: process.env.NEXT_PUBLIC_BASE_URL + '/finish-login',
+  handleCodeInApp: true,
+};
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -59,13 +65,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(userCredential.user, { displayName: name });
     
-    // Create user document in Firestore
     await setDoc(doc(db, "users", userCredential.user.uid), {
         uid: userCredential.user.uid,
         displayName: name,
         email: email,
         createdAt: new Date(),
-        // Initialize other user-specific data
         learningProgress: {}, 
         portfolio: {},
         budget: {},
@@ -82,18 +86,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return sendPasswordResetEmail(auth, email);
   };
 
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
+  const signInWithEmailLink = async (email: string) => {
+    window.localStorage.setItem('emailForSignIn', email);
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+  };
+
+  const handleSignInWithEmailLink = async (url: string) => {
+    if (isSignInWithEmailLink(auth, url)) {
+      let email = window.localStorage.getItem('emailForSignIn');
+      if (!email) {
+        email = window.prompt('Please provide your email for confirmation');
+        if (!email) {
+          throw new Error('Email is required to complete sign-in.');
+        }
+      }
+      const result = await firebaseSignInWithEmailLink(auth, email, url);
+      window.localStorage.removeItem('emailForSignIn');
+
       const userDocRef = doc(db, "users", result.user.uid);
       const userDoc = await getDoc(userDocRef);
   
-      // Create a new user document in Firestore only if it doesn't already exist
       if (!userDoc.exists()) {
           await setDoc(userDocRef, {
               uid: result.user.uid,
-              displayName: result.user.displayName,
+              displayName: result.user.displayName || email.split('@')[0],
               email: result.user.email,
               photoURL: result.user.photoURL,
               createdAt: new Date(),
@@ -103,19 +119,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
       }
       return result;
-    } catch (error: any) {
-      // Gracefully handle cases where the user closes the popup
-      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        console.warn('Google Sign-In popup was closed by the user.');
-        return; // Return without throwing an error to prevent app crash
-      }
-      // For other errors, log them and re-throw so the UI can handle them
-      console.error("Google Sign-In Error:", error);
-      throw error;
     }
   };
 
-  const value = { user, loading, signIn, signUp, signOut, sendPasswordReset, signInWithGoogle };
+  const value = { 
+    user, 
+    loading, 
+    signIn, 
+    signUp, 
+    signOut, 
+    sendPasswordReset, 
+    signInWithEmailLink, 
+    handleSignInWithEmailLink 
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
