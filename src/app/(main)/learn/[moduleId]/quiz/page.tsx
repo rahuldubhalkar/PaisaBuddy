@@ -160,7 +160,7 @@ export default function ModuleQuizPage() {
                             <AlertDescription>
                             Your answer: <strong>{userAnswer || 'Not answered'}</strong>.
                             <br />
-                            Correct answer is: <strong>{q.answer}</strong>
+                            Correct answer: <strong>{q.answer}</strong>
                             </AlertDescription>
                         </Alert>
                         )}
