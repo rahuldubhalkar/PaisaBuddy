@@ -163,8 +163,6 @@ const COLORS = ['#3F51B5', '#7E57C2', '#4CAF50', '#FFC107', '#F44336', '#2196F3'
 export default function PortfolioPage() {
   const { assets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage } = usePortfolio();
   
-  const displayedAssets = assets;
-
   const chartData = assets
     .filter(asset => asset.quantity > 0)
     .map((asset) => ({
@@ -255,7 +253,7 @@ export default function PortfolioPage() {
               <CardTitle>Your Assets</CardTitle>
             </CardHeader>
             <CardContent>
-             {displayedAssets.length > 0 ? (
+             {assets.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -358,18 +356,9 @@ export default function PortfolioPage() {
                       cy="50%"
                       outerRadius={120}
                       labelLine={false}
-                      label={({
-                        cx,
-                        cy,
-                        midAngle,
-                        innerRadius,
-                        outerRadius,
-                        percent,
-                        index,
-                      }) => {
+                      label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
                         const RADIAN = Math.PI / 180;
-                        const radius =
-                          innerRadius + (outerRadius - innerRadius) * 0.5;
+                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                         const x = cx + radius * Math.cos(-midAngle * RADIAN);
                         const y = cy + radius * Math.sin(-midAngle * RADIAN);
                         return (
