@@ -97,7 +97,6 @@ function TradeDialog({
         <Button
           variant={action === 'Buy' ? 'outline' : 'destructive'}
           size="sm"
-          className="w-full"
         >
           {action === 'Buy' ? (
             <Plus className="mr-1 h-4 w-4" />
