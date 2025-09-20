@@ -96,15 +96,13 @@ function TradeDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div className="flex justify-center">
-            <Button
-                variant={action === 'Buy' ? 'outline' : 'destructive'}
-                size="sm"
-            >
-                {action === 'Buy' ? <Plus className="mr-1 h-4 w-4" /> : <Minus className="mr-1 h-4 w-4" />}
-                {action}
-            </Button>
-        </div>
+        <Button
+            variant={action === 'Buy' ? 'outline' : 'destructive'}
+            size="sm"
+        >
+            {action === 'Buy' ? <Plus className="mr-1 h-4 w-4" /> : <Minus className="mr-1 h-4 w-4" />}
+            {action}
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
