@@ -9,20 +9,20 @@
     {
       "id": "dashboard-learn",
       "description": "A person studying with a laptop and notebook, representing the learning modules.",
-      "imageUrl": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=600&h=400&fit=crop",
+      "imageUrl": "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=600&h=400&fit=crop",
       "imageHint": "person studying"
     },
     {
       "id": "dashboard-budget",
-      "description": "A person putting a coin into a piggy bank, representing budgeting and saving.",
+      "description": "A piggy bank with coins, representing budgeting and saving.",
       "imageUrl": "https://images.unsplash.com/photo-1593672715438-d88a706299a5?q=80&w=600&h=400&fit=crop",
       "imageHint": "piggy bank"
     },
     {
       "id": "dashboard-fraud",
-      "description": "A shield icon on a digital screen, symbolizing fraud protection and cybersecurity.",
-      "imageUrl": "https://images.unsplash.com/photo-1562813531-529556852337?q=80&w=600&h=400&fit=crop",
-      "imageHint": "security shield"
+      "description": "A padlock on a digital screen, symbolizing fraud protection and cybersecurity.",
+      "imageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=600&h=400&fit=crop",
+      "imageHint": "cyber security"
     }
   ]
 }
