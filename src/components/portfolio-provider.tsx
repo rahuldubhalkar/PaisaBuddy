@@ -22,6 +22,7 @@ const initialAssets: Asset[] = [
   { id: 'AXISBLUE', name: 'Axis Bluechip Fund', ticker: 'AXISBLUE', type: 'Mutual Fund', quantity: 100, avgPrice: 50, currentPrice: 52.80 },
 ];
 
+const INITIAL_VIRTUAL_CASH = 100000;
 
 interface PortfolioContextType {
     allPortfolioAssets: Asset[];
@@ -31,16 +32,17 @@ interface PortfolioContextType {
     totalInvestment: number;
     totalGainLoss: number;
     totalGainLossPercentage: number;
-    handleTrade: (assetId: string, quantity: number, action: 'Buy' | 'Sell') => void;
+    handleTrade: (assetId: string, quantity: number, action: 'Buy' | 'Sell') => boolean;
     addAsset: (asset: Asset) => void;
     hasAsset: (assetId: string) => boolean;
+    resetVirtualCash: () => void;
 }
 
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
     const [allPortfolioAssets, setAllPortfolioAssets] = useState<Asset[]>([]);
-    const [virtualCash, setVirtualCash] = useState<number>(100000);
+    const [virtualCash, setVirtualCash] = useState<number>(INITIAL_VIRTUAL_CASH);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -55,12 +57,12 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
             if (storedCash) {
                 setVirtualCash(JSON.parse(storedCash));
             } else {
-                setVirtualCash(100000);
+                setVirtualCash(INITIAL_VIRTUAL_CASH);
             }
         } catch (error) {
             console.error("Failed to load from localStorage", error);
             setAllPortfolioAssets(initialAssets);
-            setVirtualCash(100000);
+            setVirtualCash(INITIAL_VIRTUAL_CASH);
         } finally {
             setLoading(false);
         }
@@ -81,15 +83,24 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     const totalGainLoss = totalPortfolioValue - totalInvestment;
     const totalGainLossPercentage = totalInvestment > 0 ? (totalGainLoss / totalInvestment) * 100 : 0;
 
-    const handleTrade = (assetId: string, quantity: number, action: 'Buy' | 'Sell') => {
+    const handleTrade = (assetId: string, quantity: number, action: 'Buy' | 'Sell'): boolean => {
+        let success = false;
         setAllPortfolioAssets(prevAssets => {
             const tradedAsset = prevAssets.find(a => a.id === assetId);
-            if (!tradedAsset) return prevAssets;
+            if (!tradedAsset) {
+                success = false;
+                return prevAssets;
+            }
 
             const cost = quantity * tradedAsset.currentPrice;
 
             if (action === 'Buy') {
+                if (virtualCash < cost) {
+                    success = false;
+                    return prevAssets;
+                }
                 setVirtualCash(vc => vc - cost);
+                success = true;
                 return prevAssets.map(a => 
                     a.id === tradedAsset.id 
                     ? { ...a, 
@@ -98,11 +109,15 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
                     : a
                 );
             } else { // Sell
-                setVirtualCash(vc => vc + cost);
                 const existingAsset = prevAssets.find(a => a.id === tradedAsset.id);
-                if (!existingAsset) return prevAssets;
+                if (!existingAsset || existingAsset.quantity < quantity) {
+                    success = false;
+                    return prevAssets;
+                }
 
+                setVirtualCash(vc => vc + cost);
                 const newQuantity = existingAsset.quantity - quantity;
+                success = true;
                 return prevAssets.map(a => 
                     a.id === tradedAsset.id 
                     ? { ...a, quantity: newQuantity, avgPrice: newQuantity > 0 ? a.avgPrice : 0 } 
@@ -110,6 +125,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
                 );
             }
         });
+        return success;
     };
     
     const addAsset = (assetToAdd: Asset) => {
@@ -125,6 +141,10 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     const hasAsset = (assetId: string) => {
         return allPortfolioAssets.some(asset => asset.id === assetId);
     }
+    
+    const resetVirtualCash = () => {
+        setVirtualCash(INITIAL_VIRTUAL_CASH);
+    }
 
     const value = {
         allPortfolioAssets,
@@ -137,6 +157,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         handleTrade,
         addAsset,
         hasAsset,
+        resetVirtualCash,
     };
 
     if (loading) {

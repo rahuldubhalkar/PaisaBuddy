@@ -8,6 +8,7 @@ import {
   Minus,
   Plus,
   ArrowRight,
+  WalletCards,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -16,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -48,7 +50,6 @@ import {
   Legend,
 } from 'recharts';
 import { usePortfolio, Asset } from '@/components/portfolio-provider';
-import { Header } from '@radix-ui/react-accordion';
 
 function TradeDialog({
   asset,
@@ -67,31 +68,22 @@ function TradeDialog({
   const maxBuyable = Math.floor(virtualCash / asset.currentPrice);
 
   const onTrade = () => {
-    if (action === 'Buy' && totalCost > virtualCash) {
-      toast({
-        title: 'Insufficient Funds',
-        description:
-          'You do not have enough virtual cash to complete this transaction.',
-        variant: 'destructive',
-      });
-      return;
+    const success = handleTrade(asset.id, quantity, action);
+    if (success) {
+        setOpen(false);
+        toast({
+        title: `Trade Successful`,
+        description: `You have successfully ${
+            action === 'Buy' ? 'bought' : 'sold'
+        } ${quantity} unit(s) of ${asset.name}.`,
+        });
+    } else {
+        toast({
+            title: `Trade Failed`,
+            description: `You don't have enough ${action === 'Buy' ? 'cash' : 'assets'} to complete this transaction.`,
+            variant: 'destructive',
+        });
     }
-    if (action === 'Sell' && quantity > maxSellable) {
-      toast({
-        title: 'Invalid Quantity',
-        description: 'You cannot sell more assets than you own.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    handleTrade(asset.id, quantity, action);
-    setOpen(false);
-    toast({
-      title: `Trade Successful`,
-      description: `You have successfully ${
-        action === 'Buy' ? 'bought' : 'sold'
-      } ${quantity} unit(s) of ${asset.name}.`,
-    });
   };
 
   return (
@@ -179,7 +171,8 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 export default function PortfolioPage() {
-  const { allPortfolioAssets, heldAssets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage } = usePortfolio();
+  const { allPortfolioAssets, heldAssets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage, resetVirtualCash } = usePortfolio();
+  const { toast } = useToast();
   
   const chartData = heldAssets.map((asset) => ({
       name: asset.ticker,
@@ -187,6 +180,14 @@ export default function PortfolioPage() {
   }));
     
   const hasHoldings = heldAssets.length > 0;
+  
+  const handleResetCash = () => {
+    resetVirtualCash();
+    toast({
+        title: 'Virtual Cash Reset',
+        description: 'Your virtual cash has been reset to ₹1,00,000.',
+    });
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -215,6 +216,12 @@ export default function PortfolioPage() {
               ₹{virtualCash.toLocaleString('en-IN')}
             </div>
           </CardContent>
+          <CardFooter>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={handleResetCash}>
+              <WalletCards className="mr-2 h-4 w-4" />
+              Reset Cash
+            </Button>
+          </CardFooter>
         </Card>
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
