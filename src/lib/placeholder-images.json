@@ -3,26 +3,26 @@
     {
       "id": "dashboard-portfolio",
       "description": "A dynamic stock market chart, representing the virtual portfolio feature.",
-      "imageUrl": "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=600&h=400&fit=crop",
+      "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=600&h=400&fit=crop",
       "imageHint": "stock market"
     },
     {
       "id": "dashboard-learn",
-      "description": "A person reading a book in a library, representing learning.",
-      "imageUrl": "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=600&h=400&fit=crop",
-      "imageHint": "study library"
+      "description": "A person studying with a laptop and notebook, representing the learning modules.",
+      "imageUrl": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=600&h=400&fit=crop",
+      "imageHint": "person studying"
     },
     {
       "id": "dashboard-budget",
-      "description": "A wallet with Indian rupee notes, representing budgeting.",
-      "imageUrl": "https://images.unsplash.com/photo-1620714223084-86c9df242d04?q=80&w=600&h=400&fit=crop",
-      "imageHint": "wallet money"
+      "description": "A person putting a coin into a piggy bank, representing budgeting and saving.",
+      "imageUrl": "https://images.unsplash.com/photo-1593672715438-d88a706299a5?q=80&w=600&h=400&fit=crop",
+      "imageHint": "piggy bank"
     },
     {
       "id": "dashboard-fraud",
-      "description": "A digital padlock icon on a screen, symbolizing cybersecurity.",
-      "imageUrl": "https://images.unsplash.com/photo-1526374965328-5f61d4dc18c5?q=80&w=600&h=400&fit=crop",
-      "imageHint": "security"
+      "description": "A shield icon on a digital screen, symbolizing fraud protection and cybersecurity.",
+      "imageUrl": "https://images.unsplash.com/photo-1562813531-529556852337?q=80&w=600&h=400&fit=crop",
+      "imageHint": "security shield"
     }
   ]
 }
