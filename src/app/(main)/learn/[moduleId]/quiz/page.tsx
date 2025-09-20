@@ -26,38 +26,33 @@ export default function ModuleQuizPage() {
 
   useEffect(() => {
     if (!module) return;
-  
-    setSubmitted(false);
-    setSelectedAnswers({});
-    setScore(0);
-    setCurrentQuestionIndex(0);
-  
-    // Check if the quiz was already completed by checking progress
-    if (module.progress === 100) {
-        const savedAnswers: Record<string, string> = {};
-        let correctCount = 0;
-        module.quiz.questions.forEach(q => {
-            const storedAnswer = localStorage.getItem(`quiz-${moduleId}-q-${q.id}`);
-            if (storedAnswer) {
-                savedAnswers[q.id] = storedAnswer;
-                if (storedAnswer === q.answer) {
-                    correctCount++;
-                }
-            }
-        });
-        setSelectedAnswers(savedAnswers);
-        setScore(correctCount);
-        setSubmitted(true);
+
+    const savedAnswers: Record<string, string> = {};
+    let isComplete = true;
+    for (const q of module.quiz.questions) {
+      const storedAnswer = localStorage.getItem(`quiz-${moduleId}-q-${q.id}`);
+      if (storedAnswer) {
+        savedAnswers[q.id] = storedAnswer;
+      } else {
+        isComplete = false;
+      }
+    }
+    
+    if (isComplete && Object.keys(savedAnswers).length === module.quiz.questions.length) {
+      setSelectedAnswers(savedAnswers);
+      const calculatedScore = module.quiz.questions.reduce((correct, q) => {
+        return savedAnswers[q.id] === q.answer ? correct + 1 : correct;
+      }, 0);
+      setScore(calculatedScore);
+      setSubmitted(true);
     } else {
-        // Clear previous answers if quiz is not complete
-         module.quiz.questions.forEach(q => {
-            localStorage.removeItem(`quiz-${moduleId}-q-${q.id}`);
-        });
-        updateModuleProgress(moduleId, 0);
+      setSubmitted(false);
+      setSelectedAnswers({});
+      setScore(0);
+      setCurrentQuestionIndex(0);
     }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [moduleId, getModuleById]);
+  }, [moduleId, module]);
 
 
   if (!module || !module.quiz) {
