@@ -1,15 +1,17 @@
 'use client';
 
 import { notFound, useParams } from 'next/navigation';
+import Link from 'next/link';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { BookOpen, ArrowRight } from 'lucide-react';
 import { useLearningModules } from '@/components/learning-modules-provider';
+import { Button } from '@/components/ui/button';
 
 export default function ModuleLessonsPage() {
   const params = useParams();
@@ -47,6 +49,13 @@ export default function ModuleLessonsPage() {
           ))}
         </Accordion>
       </CardContent>
+       <CardFooter>
+        <Button asChild>
+          <Link href={`/learn/${moduleId}/quiz`}>
+            Start Quiz <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
