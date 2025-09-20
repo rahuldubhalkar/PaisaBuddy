@@ -61,7 +61,8 @@ function LearningProgress() {
   const { modules } = useLearningModules();
   const totalModules = modules.length;
   const completedModules = modules.filter(m => m.progress === 100).length;
-  const overallProgress = totalModules > 0 ? (completedModules / totalModules) * 100 : 0;
+  const totalProgress = modules.reduce((sum, module) => sum + module.progress, 0);
+  const overallProgress = totalModules > 0 ? totalProgress / totalModules : 0;
 
   return (
      <Card className="col-span-1 md:col-span-2">
