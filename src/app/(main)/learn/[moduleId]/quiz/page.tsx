@@ -63,7 +63,8 @@ export default function ModuleQuizPage() {
         updateModuleProgress(moduleId, 0);
     }
 
-  }, [moduleId, module, updateModuleProgress]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moduleId, module]);
 
 
   if (!module || !module.quiz) {
@@ -72,15 +73,14 @@ export default function ModuleQuizPage() {
 
   const handleAnswerChange = (questionId: string, value: string) => {
     if (submitted) return;
-    setSelectedAnswers(prev => ({ ...prev, [questionId]: value }));
+    const newAnswers = { ...selectedAnswers, [questionId]: value };
+    setSelectedAnswers(newAnswers);
+    localStorage.setItem(`quiz-${moduleId}-q-${questionId}`, value);
   };
 
   const handleSubmit = () => {
     if (submitted) return;
     const calculatedScore = module.quiz.questions.reduce((correct, q) => {
-      if(selectedAnswers[q.id]) {
-        localStorage.setItem(`quiz-${moduleId}-q-${q.id}`, selectedAnswers[q.id]);
-      }
       return selectedAnswers[q.id] === q.answer ? correct + 1 : correct;
     }, 0);
     
