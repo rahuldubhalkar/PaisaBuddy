@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle, XCircle, Award, RotateCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCircle, XCircle, Award, RotateCw, ChevronLeft, ChevronRight, Trophy } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 export default function ModuleQuizPage() {
@@ -28,18 +28,28 @@ export default function ModuleQuizPage() {
     if (module && module.progress === 100) {
       setSubmitted(true);
       const correctAnswers: Record<string, string> = {};
+      let correctCount = 0;
       module.quiz.questions.forEach(q => {
-        correctAnswers[q.id] = q.answer;
+        if (selectedAnswers[q.id] === q.answer) {
+             correctAnswers[q.id] = q.answer;
+             correctCount++;
+        } else {
+             // To show results for already completed quizzes, we need to populate this
+             const storedAnswer = localStorage.getItem(`quiz-${moduleId}-q-${q.id}`);
+             correctAnswers[q.id] = storedAnswer || '';
+             if (storedAnswer === q.answer) correctCount++;
+        }
       });
       setSelectedAnswers(correctAnswers);
-      setScore(module.quiz.questions.length);
+      setScore(correctCount);
+
     } else {
       setSubmitted(false);
       setSelectedAnswers({});
       setScore(0);
       setCurrentQuestionIndex(0);
     }
-  }, [module]);
+  }, [moduleId, module]);
 
   if (!module || !module.quiz) {
     notFound();
@@ -53,6 +63,8 @@ export default function ModuleQuizPage() {
   const handleSubmit = () => {
     if (submitted) return;
     const calculatedScore = module.quiz.questions.reduce((correct, q) => {
+      // Save answer to local storage for review later
+      localStorage.setItem(`quiz-${moduleId}-q-${q.id}`, selectedAnswers[q.id]);
       return selectedAnswers[q.id] === q.answer ? correct + 1 : correct;
     }, 0);
     
@@ -63,6 +75,9 @@ export default function ModuleQuizPage() {
   };
 
   const handleRetake = () => {
+    module.quiz.questions.forEach(q => {
+        localStorage.removeItem(`quiz-${moduleId}-q-${q.id}`);
+    });
     setSelectedAnswers({});
     setSubmitted(false);
     setScore(0);
@@ -83,43 +98,56 @@ export default function ModuleQuizPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <Award className="h-6 w-6 text-primary"/>
-            <CardTitle>Quiz: {module.title}</CardTitle>
+            <Trophy className="h-6 w-6 text-primary"/>
+            <CardTitle>Quiz Results: {module.title}</CardTitle>
           </div>
-          <CardDescription>Review your results.</CardDescription>
+          <CardDescription>Here's how you did. Review your answers below.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <Card className="text-center p-6 bg-secondary">
-            <CardTitle className="text-2xl font-bold mb-2">
-              {finalProgress === 100 ? 'Quiz Mastered!' : 'Quiz Complete!'}
-            </CardTitle>
-            <CardDescription className="mb-4">
-              You scored {finalScore} out of {totalQuestions}.
-            </CardDescription>
-            <Progress value={finalProgress} className="w-full h-3 mb-4" />
-            <div className="flex justify-center gap-4 mt-4">
-              <Button variant="outline" asChild>
-                <Link href="/learn">
-                  Back to Modules
-                </Link>
-              </Button>
-              {finalProgress !== 100 && (
-                <Button onClick={handleRetake}>
-                  <RotateCw className="mr-2 h-4 w-4" />
-                  Retake Quiz
+          <Card className="text-center p-6 bg-secondary/50">
+             <CardHeader className="p-0">
+                <CardTitle className="text-2xl font-bold mb-2">
+                {finalProgress >= 80 ? 'Excellent Work!' : 'Quiz Complete!'}
+                </CardTitle>
+                <CardDescription>This is your score card for this quiz attempt.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 mt-6 flex flex-col items-center">
+                 <div className="relative h-32 w-32">
+                    <svg className="h-full w-full" width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="18" cy="18" r="16" fill="none" className="stroke-current text-gray-200 dark:text-gray-700" strokeWidth="2"></circle>
+                        <g className="origin-center -rotate-90 transform">
+                            <circle cx="18" cy="18" r="16" fill="none" className="stroke-current text-primary" strokeWidth="2" strokeDasharray={`${finalProgress}, 100`}></circle>
+                        </g>
+                    </svg>
+                    <div className="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2">
+                        <span className="text-center text-2xl font-bold text-gray-800 dark:text-white">{finalProgress}%</span>
+                    </div>
+                </div>
+                <p className="mt-4 text-lg">You scored <strong>{finalScore}</strong> out of <strong>{totalQuestions}</strong></p>
+                <div className="flex justify-center gap-4 mt-6">
+                <Button variant="outline" asChild>
+                    <Link href="/learn">
+                    Back to Modules
+                    </Link>
                 </Button>
-              )}
-            </div>
+                {finalProgress !== 100 && (
+                    <Button onClick={handleRetake}>
+                    <RotateCw className="mr-2 h-4 w-4" />
+                    Retake Quiz
+                    </Button>
+                )}
+                </div>
+            </CardContent>
           </Card>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Your Answers:</h3>
+            <h3 className="text-lg font-semibold">Review Your Answers:</h3>
             {module.quiz.questions.map(q => (
               <div key={q.id}>
                 <p className="font-semibold mb-2">{q.text}</p>
                 {selectedAnswers[q.id] === q.answer ? (
-                  <Alert variant="default" className="border-green-500 text-green-700 bg-green-50">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  <Alert variant="default" className="border-green-500 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400 dark:border-green-500/50">
+                    <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400" />
                     <AlertTitle>Correct!</AlertTitle>
                     <AlertDescription>Your answer: <strong>{selectedAnswers[q.id]}</strong></AlertDescription>
                   </Alert>
