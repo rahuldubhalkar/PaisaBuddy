@@ -84,11 +84,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      
       const userDocRef = doc(db, "users", result.user.uid);
       const userDoc = await getDoc(userDocRef);
   
       if (!userDoc.exists()) {
+          // Create a new user document in Firestore if it doesn't exist
           await setDoc(userDocRef, {
               uid: result.user.uid,
               displayName: result.user.displayName,
@@ -99,21 +99,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               budget: {},
           });
       }
-  
       return result;
     } catch (error: any) {
-      // Handle specific popup errors
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        console.log('Google Sign-In popup was closed by the user.');
-        return; // Fail gracefully
+        // This is a common case where the user closes the popup.
+        // We can just log it and let the user try again.
+        console.warn('Google Sign-In popup was closed by the user.');
+        return; // Return gracefully.
       }
-      // Attempt to get the credential from the error.
-      const credential = GoogleAuthProvider.credentialFromError(error);
-      if (credential) {
-        // You can use the credential to link accounts or other recovery flows.
-        console.error("Google Auth credential error:", credential);
-      }
-      // Re-throw other errors
+      // For other errors, we should re-throw them so they can be handled by the UI.
+      console.error("Google Sign-In Error:", error);
       throw error;
     }
   };
