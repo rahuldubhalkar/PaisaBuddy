@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -7,7 +8,9 @@ import {
   TrendingUp,
   Minus,
   Plus,
+  ArrowRight,
 } from 'lucide-react';
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -97,6 +100,7 @@ function TradeDialog({
         <Button
           variant={action === 'Buy' ? 'outline' : 'destructive'}
           size="sm"
+          disabled={action === 'Sell' && asset.quantity === 0}
         >
           {action === 'Buy' ? (
             <Plus className="mr-1 h-4 w-4" />
@@ -163,10 +167,14 @@ const COLORS = ['#3F51B5', '#7E57C2', '#4CAF50', '#FFC107', '#F44336', '#2196F3'
 export default function PortfolioPage() {
   const { assets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage } = usePortfolio();
 
-  const chartData = assets.map((asset) => ({
-    name: asset.ticker,
-    value: asset.quantity * asset.currentPrice,
-  }));
+  const chartData = assets
+    .filter(asset => asset.quantity > 0)
+    .map((asset) => ({
+      name: asset.ticker,
+      value: asset.quantity * asset.currentPrice,
+    }));
+    
+  const hasHoldings = assets.some(a => a.quantity > 0);
 
   return (
     <div className="flex flex-col gap-8">
@@ -249,6 +257,7 @@ export default function PortfolioPage() {
               <CardTitle>Your Assets</CardTitle>
             </CardHeader>
             <CardContent>
+             {assets.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -264,10 +273,10 @@ export default function PortfolioPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {assets.filter(a => a.quantity > 0).map((asset) => {
+                  {assets.map((asset) => {
                     const totalValue = asset.quantity * asset.currentPrice;
                     const gainLoss =
-                      (asset.currentPrice - asset.avgPrice) * asset.quantity;
+                      asset.quantity > 0 ? (asset.currentPrice - asset.avgPrice) * asset.quantity : 0;
                     return (
                       <TableRow key={asset.id}>
                         <TableCell className="font-medium">
@@ -296,10 +305,10 @@ export default function PortfolioPage() {
                         </TableCell>
                         <TableCell
                           className={`text-right font-medium font-mono ${
-                            gainLoss >= 0 ? 'text-green-500' : 'text-red-500'
+                            gainLoss > 0 ? 'text-green-500' : gainLoss < 0 ? 'text-red-500' : ''
                           }`}
                         >
-                          {gainLoss >= 0 ? '+' : ''}₹
+                          {gainLoss > 0 ? '+' : ''}₹
                           {gainLoss.toLocaleString('en-IN', {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
@@ -316,6 +325,16 @@ export default function PortfolioPage() {
                   })}
                 </TableBody>
               </Table>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-4 text-center p-8 border-2 border-dashed rounded-lg">
+                  <p className="text-muted-foreground">Your portfolio is empty.</p>
+                  <Button asChild>
+                    <Link href="/discover">
+                      Discover Assets <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -329,6 +348,7 @@ export default function PortfolioPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+            {hasHoldings ? (
               <div style={{ width: '100%', height: 350 }}>
                 <ResponsiveContainer>
                   <PieChart>
@@ -381,6 +401,12 @@ export default function PortfolioPage() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center gap-2 text-center h-[350px]">
+                    <p className="text-muted-foreground">No holdings to display.</p>
+                    <p className="text-sm text-muted-foreground">Buy assets to see your allocation.</p>
+                </div>
+            )}
             </CardContent>
           </Card>
         </div>
