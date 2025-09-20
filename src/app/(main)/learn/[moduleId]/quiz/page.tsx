@@ -1,22 +1,37 @@
 'use client';
 
-import { useState } from 'react';
-import { notFound, useParams } from 'next/navigation';
-import { modules } from '@/lib/learning-modules-data';
+import { useState, useEffect } from 'react';
+import { notFound, useParams, useRouter } from 'next/navigation';
+import { useLearningModules } from '@/components/learning-modules-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle, XCircle, Award } from 'lucide-react';
+import { CheckCircle, XCircle, Award, RotateCw } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import Link from 'next/link';
 
 export default function ModuleQuizPage() {
   const params = useParams();
-  const { moduleId } = params;
-  const module = modules.find((m) => m.id === moduleId);
+  const router = useRouter();
+  const { moduleId } = params as { moduleId: string };
+  const { getModuleById, updateModuleProgress } = useLearningModules();
+  
+  const module = getModuleById(moduleId);
 
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    if (module && module.progress === 100) {
+      setSubmitted(true);
+      // Pre-fill answers if quiz was already completed, though they can't be changed.
+      const initialAnswers = module.quiz.questions.reduce((acc, q) => ({ ...acc, [q.id]: q.answer }), {});
+      setSelectedAnswers(initialAnswers);
+    }
+  }, [module]);
 
   if (!module || !module.quiz) {
     notFound();
@@ -27,16 +42,25 @@ export default function ModuleQuizPage() {
   };
 
   const handleSubmit = () => {
+    const calculatedScore = module.quiz.questions.reduce((correct, q) => {
+      return selectedAnswers[q.id] === q.answer ? correct + 1 : correct;
+    }, 0);
+    
+    setScore(calculatedScore);
+    const progress = Math.round((calculatedScore / module.quiz.questions.length) * 100);
+    updateModuleProgress(moduleId, progress);
     setSubmitted(true);
   };
 
-  const score = Object.keys(selectedAnswers).reduce((correct, qId) => {
-    const question = module.quiz.questions.find(q => q.id === qId);
-    if (question && selectedAnswers[qId] === question.answer) {
-      return correct + 1;
-    }
-    return correct;
-  }, 0);
+  const handleRetake = () => {
+    setSelectedAnswers({});
+    setSubmitted(false);
+    setScore(0);
+    updateModuleProgress(moduleId, 0); // Reset progress
+  };
+  
+  const isQuizCompleted = module.progress === 100;
+  const finalScore = isQuizCompleted ? module.quiz.questions.length : score;
 
   return (
     <Card>
@@ -81,15 +105,34 @@ export default function ModuleQuizPage() {
             )}
           </div>
         ))}
+
         {!submitted ? (
             <Button onClick={handleSubmit} disabled={Object.keys(selectedAnswers).length !== module.quiz.questions.length}>
                 Submit Answers
             </Button>
         ) : (
-            <div className="text-center p-4 border rounded-lg bg-secondary">
-                <p className="font-bold text-lg">Quiz Complete!</p>
-                <p>You scored {score} out of {module.quiz.questions.length}</p>
-            </div>
+            <Card className="text-center p-6 bg-secondary">
+              <CardTitle className="text-2xl font-bold mb-2">
+                {isQuizCompleted ? 'Quiz Mastered!' : 'Quiz Complete!'}
+              </CardTitle>
+              <CardDescription className="mb-4">
+                You scored {finalScore} out of {module.quiz.questions.length}.
+              </CardDescription>
+              <Progress value={module.progress} className="w-full h-3 mb-4" />
+              <div className="flex justify-center gap-4 mt-4">
+                  <Button variant="outline" asChild>
+                    <Link href="/learn">
+                        Back to Modules
+                    </Link>
+                  </Button>
+                  {!isQuizCompleted && (
+                    <Button onClick={handleRetake}>
+                      <RotateCw className="mr-2 h-4 w-4" />
+                      Retake Quiz
+                    </Button>
+                  )}
+              </div>
+            </Card>
         )}
       </CardContent>
     </Card>

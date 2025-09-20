@@ -1,7 +1,6 @@
 'use client';
 
 import { notFound, useParams } from 'next/navigation';
-import { modules } from '@/lib/learning-modules-data';
 import {
   Accordion,
   AccordionContent,
@@ -10,11 +9,14 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen } from 'lucide-react';
+import { useLearningModules } from '@/components/learning-modules-provider';
 
 export default function ModuleLessonsPage() {
   const params = useParams();
   const { moduleId } = params;
-  const module = modules.find((m) => m.id === moduleId);
+  const { getModuleById } = useLearningModules();
+  
+  const module = getModuleById(moduleId as string);
 
   if (!module || !module.lessons) {
     notFound();

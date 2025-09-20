@@ -1,19 +1,34 @@
-import {
-  PiggyBank,
-  TrendingUp,
-  Smartphone,
-  Landmark,
-  Gauge,
-  HelpCircle,
-} from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 
-export const modules = [
+export interface Module {
+    id: string;
+    title: string;
+    description: string;
+    icon: keyof typeof import('lucide-react');
+    progress: number;
+    lessons: {
+        id: string;
+        title: string;
+        content: string;
+    }[];
+    quiz: {
+        questions: {
+            id: string;
+            text: string;
+            options: string[];
+            answer: string;
+        }[];
+    };
+}
+
+
+export const modules: Module[] = [
   {
     id: 'budgeting-basics',
     title: 'Budgeting Basics – Master Your Money',
     description: 'Understand the importance of budgeting, track income and expenses, and explore frameworks like the 50-30-20 rule.',
-    icon: 'PiggyBank' as const,
-    progress: 75,
+    icon: 'PiggyBank',
+    progress: 0,
     lessons: [
       { id: '1', title: 'Why is Budgeting Important?', content: 'Budgeting is crucial for financial stability. It empowers you to track your income, manage your expenses, and consciously allocate funds towards your savings and financial goals, giving you full control over your money.' },
       { id: '2', title: 'The 50-30-20 Rule Explained', content: 'A simple yet effective budgeting framework. Allocate 50% of your income to "Needs" (rent, groceries, utilities), 30% to "Wants" (dining out, entertainment), and dedicate 20% to "Savings & Investments".' },
@@ -30,8 +45,8 @@ export const modules = [
     id: 'sips-small-steps',
     title: 'SIPs – Small Steps, Big Future',
     description: 'Learn what Systematic Investment Plans (SIPs) are, the benefits of compounding, and how they compare to lump-sum investments.',
-    icon: 'TrendingUp' as const,
-    progress: 40,
+    icon: 'TrendingUp',
+    progress: 0,
     lessons: [
         { id: '1', title: 'What is a Systematic Investment Plan (SIP)?', content: 'A SIP is an investment method where you invest a fixed amount of money in mutual funds at regular intervals (usually monthly). It promotes disciplined investing and makes it easier to start without a large initial sum.' },
         { id: '2', title: 'The Magic of Compounding & Rupee Cost Averaging', content: 'Compounding means earning returns on your returns. Over time, this can lead to exponential growth. Rupee Cost Averaging means you buy more units when the market is low and fewer when it is high, averaging out your purchase cost.' },
@@ -48,8 +63,8 @@ export const modules = [
     id: 'upi-digital-revolution',
     title: 'UPI – India’s Digital Revolution',
     description: 'Understand how UPI works, its role in digital payments, and how to transact securely.',
-    icon: 'Smartphone' as const,
-    progress: 100,
+    icon: 'Smartphone',
+    progress: 0,
     lessons: [
       { id: '1', title: 'How Does UPI Work?', content: 'The Unified Payments Interface (UPI) is an instant payment system that allows you to transfer money between bank accounts using a mobile device. All you need is a Virtual Payment Address (VPA) or UPI ID.' },
       { id: '2', title: 'Spotting UPI Fraud', content: 'Beware of common scams! Never enter your PIN to *receive* money. Approving a payment request sends money *from* your account. Be cautious of unsolicited requests from unknown contacts.' },
@@ -64,7 +79,7 @@ export const modules = [
     id: 'taxes-demystifying-deductions',
     title: 'Taxes – Demystifying Deductions',
     description: 'Grasp the basics of income tax in India, common deductions like 80C, and the importance of filing returns.',
-    icon: 'Landmark' as const,
+    icon: 'Landmark',
     progress: 0,
     lessons: [
       { id: '1', title: 'Basics of Income Tax in India', content: 'Income tax is a tax paid by individuals on their earnings. The amount you pay depends on which tax slab your income falls into. Filing your tax return is a legal requirement.' },
@@ -80,7 +95,7 @@ export const modules = [
     id: 'credit-score-management',
     title: 'Credit Score Management',
     description: 'Learn what a credit score is, factors that impact it, and how to build a healthy score.',
-    icon: 'Gauge' as const,
+    icon: 'Gauge',
     progress: 0,
     lessons: [
       { id: '1', title: 'What is a Credit Score and Why It Matters?', content: 'A credit score (like a CIBIL score) is a 3-digit number between 300-900 that represents your creditworthiness. Lenders use it to decide whether to approve loans or credit cards. A higher score means better financial health.' },
@@ -96,8 +111,8 @@ export const modules = [
     id: 'intro-to-mutual-funds',
     title: 'Intro to Mutual Funds',
     description: 'Demystify mutual funds, their types, and how to choose the right one for you.',
-    icon: 'HelpCircle' as const,
-    progress: 20,
+    icon: 'HelpCircle',
+    progress: 0,
     lessons: [
       { id: '1', title: 'What are Mutual Funds?', content: 'A mutual fund is a company that pools money from many investors and invests the money in securities such as stocks, bonds, and short-term debt. The combined holdings of the mutual fund are known as its portfolio.' },
     ],

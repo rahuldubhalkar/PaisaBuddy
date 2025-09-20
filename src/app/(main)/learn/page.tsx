@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Card,
@@ -17,9 +19,20 @@ import {
   Gauge,
   HelpCircle,
 } from 'lucide-react';
-import { modules } from '@/lib/learning-modules-data';
+import { useLearningModules } from '@/components/learning-modules-provider';
+
+const icons = {
+  PiggyBank,
+  TrendingUp,
+  Smartphone,
+  Landmark,
+  Gauge,
+  HelpCircle,
+};
 
 export default function LearnPage() {
+  const { modules } = useLearningModules();
+  
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -32,14 +45,7 @@ export default function LearnPage() {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {modules.map((module) => {
-          const Icon = {
-            PiggyBank,
-            TrendingUp,
-            Smartphone,
-            Landmark,
-            Gauge,
-            HelpCircle,
-          }[module.icon];
+          const Icon = icons[module.icon];
 
           return (
           <Card key={module.id} className="flex flex-col">

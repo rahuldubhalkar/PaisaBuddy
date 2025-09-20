@@ -2,18 +2,19 @@
 
 import { notFound, useParams, usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { modules } from '@/lib/learning-modules-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Award, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLearningModules } from '@/components/learning-modules-provider';
 
 export default function ModuleDetailsPage({ children }: { children: React.ReactNode }) {
   const params = useParams();
   const pathname = usePathname();
   const router = useRouter();
   const { moduleId } = params;
+  const { getModuleById } = useLearningModules();
   
-  const module = modules.find((m) => m.id === moduleId);
+  const module = getModuleById(moduleId as string);
 
   if (!module) {
     notFound();
