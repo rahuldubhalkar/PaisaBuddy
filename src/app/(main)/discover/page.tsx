@@ -55,13 +55,19 @@ export default function DiscoverPage() {
         </TabsList>
         
         <TabsContent value="all">
-          <AssetGrid assets={filteredAssets} />
+          <div>
+            <AssetGrid assets={filteredAssets} />
+          </div>
         </TabsContent>
         <TabsContent value="stocks">
-          <AssetGrid assets={stocks} />
+          <div>
+            <AssetGrid assets={stocks} />
+          </div>
         </TabsContent>
         <TabsContent value="mutual-funds">
-          <AssetGrid assets={mutualFunds} />
+          <div>
+            <AssetGrid assets={mutualFunds} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
