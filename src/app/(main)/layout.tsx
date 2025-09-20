@@ -14,6 +14,7 @@ import {
   Search,
   LogOut,
   User,
+  WalletCards,
 } from 'lucide-react';
 
 import {
@@ -49,6 +50,7 @@ const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/portfolio', label: 'Virtual Portfolio', icon: CandlestickChart },
   { href: '/discover', label: 'Discover Assets', icon: Search },
+  { href: '/add-cash', label: 'Add Cash', icon: WalletCards },
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/learn', label: 'Learning Modules', icon: GraduationCap },
   { href: '/budget', label: 'Budgeting Tools', icon: Wallet },

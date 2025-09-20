@@ -171,8 +171,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 export default function PortfolioPage() {
-  const { allPortfolioAssets, heldAssets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage, addVirtualCash } = usePortfolio();
-  const { toast } = useToast();
+  const { allPortfolioAssets, heldAssets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage } = usePortfolio();
   
   const chartData = heldAssets.map((asset) => ({
       name: asset.ticker,
@@ -181,14 +180,6 @@ export default function PortfolioPage() {
     
   const hasHoldings = heldAssets.length > 0;
   
-  const handleAddCash = () => {
-    addVirtualCash();
-    toast({
-        title: 'Virtual Cash Added',
-        description: '₹1,00,000 has been added to your virtual cash.',
-    });
-  }
-
   return (
     <div className="flex flex-col gap-8">
       <h1 className="text-3xl font-bold tracking-tight">Virtual Portfolio</h1>
@@ -217,9 +208,11 @@ export default function PortfolioPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button variant="ghost" size="sm" className="text-xs" onClick={handleAddCash}>
-              <WalletCards className="mr-2 h-4 w-4" />
-              Add Cash
+            <Button asChild variant="ghost" size="sm" className="text-xs">
+              <Link href="/add-cash">
+                <WalletCards className="mr-2 h-4 w-4" />
+                Add Cash
+              </Link>
             </Button>
           </CardFooter>
         </Card>
