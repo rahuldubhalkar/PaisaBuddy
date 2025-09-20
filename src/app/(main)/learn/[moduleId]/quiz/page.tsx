@@ -28,7 +28,12 @@ export default function ModuleQuizPage() {
     if (module && module.progress === 100) {
       setSubmitted(true);
       // Pre-fill answers if quiz was already completed, though they can't be changed.
-      const initialAnswers = module.quiz.questions.reduce((acc, q) => ({ ...acc, [q.id]: q.answer }), {});
+      const initialAnswers: Record<string, string> = {};
+      module.quiz.questions.forEach(q => {
+        // This is a placeholder for a real answer-tracking system
+        // For now, we'll just pre-select the correct answer to show a completed state
+        initialAnswers[q.id] = q.answer;
+      });
       setSelectedAnswers(initialAnswers);
     }
   }, [module]);
@@ -59,8 +64,10 @@ export default function ModuleQuizPage() {
     updateModuleProgress(moduleId, 0); // Reset progress
   };
   
-  const isQuizCompleted = module.progress === 100;
-  const finalScore = isQuizCompleted ? module.quiz.questions.length : score;
+  const isQuizCompleted = submitted || module.progress === 100;
+  const finalScore = isQuizCompleted ? (module.quiz.questions.reduce((correct, q) => (selectedAnswers[q.id] === q.answer ? correct + 1 : correct), 0)) : score;
+  const finalProgress = isQuizCompleted ? Math.round((finalScore / module.quiz.questions.length) * 100) : 0;
+
 
   return (
     <Card>
@@ -113,19 +120,19 @@ export default function ModuleQuizPage() {
         ) : (
             <Card className="text-center p-6 bg-secondary">
               <CardTitle className="text-2xl font-bold mb-2">
-                {isQuizCompleted ? 'Quiz Mastered!' : 'Quiz Complete!'}
+                {finalProgress === 100 ? 'Quiz Mastered!' : 'Quiz Complete!'}
               </CardTitle>
               <CardDescription className="mb-4">
                 You scored {finalScore} out of {module.quiz.questions.length}.
               </CardDescription>
-              <Progress value={module.progress} className="w-full h-3 mb-4" />
+              <Progress value={finalProgress} className="w-full h-3 mb-4" />
               <div className="flex justify-center gap-4 mt-4">
                   <Button variant="outline" asChild>
                     <Link href="/learn">
                         Back to Modules
                     </Link>
                   </Button>
-                  {!isQuizCompleted && (
+                  {finalProgress !== 100 && (
                     <Button onClick={handleRetake}>
                       <RotateCw className="mr-2 h-4 w-4" />
                       Retake Quiz

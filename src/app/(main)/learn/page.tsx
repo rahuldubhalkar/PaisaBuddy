@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useLearningModules } from '@/components/learning-modules-provider';
 
-const icons = {
+const icons: { [key: string]: React.ElementType } = {
   PiggyBank,
   TrendingUp,
   Smartphone,
@@ -45,7 +45,7 @@ export default function LearnPage() {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {modules.map((module) => {
-          const Icon = icons[module.icon];
+          const Icon = icons[module.icon as keyof typeof icons];
 
           return (
           <Card key={module.id} className="flex flex-col">
