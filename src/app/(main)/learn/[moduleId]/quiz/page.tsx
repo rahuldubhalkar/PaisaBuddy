@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { notFound, useParams, useRouter } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { useLearningModules } from '@/components/learning-modules-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ import Link from 'next/link';
 
 export default function ModuleQuizPage() {
   const params = useParams();
-  const router = useRouter();
   const { moduleId } = params as { moduleId: string };
   const { getModuleById, updateModuleProgress } = useLearningModules();
   
@@ -27,14 +26,19 @@ export default function ModuleQuizPage() {
   useEffect(() => {
     if (module && module.progress === 100) {
       setSubmitted(true);
-      // Pre-fill answers if quiz was already completed, though they can't be changed.
-      const initialAnswers: Record<string, string> = {};
+      // This is a simplified way to show a completed state.
+      // In a real app, you'd likely store the user's actual answers.
+      const correctAnswers: Record<string, string> = {};
       module.quiz.questions.forEach(q => {
-        // This is a placeholder for a real answer-tracking system
-        // For now, we'll just pre-select the correct answer to show a completed state
-        initialAnswers[q.id] = q.answer;
+        correctAnswers[q.id] = q.answer;
       });
-      setSelectedAnswers(initialAnswers);
+      setSelectedAnswers(correctAnswers);
+      setScore(module.quiz.questions.length);
+    } else {
+        // Reset state if it's a new attempt
+        setSubmitted(false);
+        setSelectedAnswers({});
+        setScore(0);
     }
   }, [module]);
 
@@ -43,10 +47,12 @@ export default function ModuleQuizPage() {
   }
 
   const handleAnswerChange = (questionId: string, value: string) => {
+    if (submitted) return;
     setSelectedAnswers(prev => ({ ...prev, [questionId]: value }));
   };
 
   const handleSubmit = () => {
+    if (submitted) return;
     const calculatedScore = module.quiz.questions.reduce((correct, q) => {
       return selectedAnswers[q.id] === q.answer ? correct + 1 : correct;
     }, 0);
@@ -65,7 +71,7 @@ export default function ModuleQuizPage() {
   };
   
   const isQuizCompleted = submitted || module.progress === 100;
-  const finalScore = isQuizCompleted ? (module.quiz.questions.reduce((correct, q) => (selectedAnswers[q.id] === q.answer ? correct + 1 : correct), 0)) : score;
+  const finalScore = isQuizCompleted ? score : 0;
   const finalProgress = isQuizCompleted ? Math.round((finalScore / module.quiz.questions.length) * 100) : 0;
 
 
@@ -97,7 +103,7 @@ export default function ModuleQuizPage() {
             {submitted && (
               <div className="mt-2">
                 {selectedAnswers[q.id] === q.answer ? (
-                  <Alert variant="default" className="border-green-500 text-green-700">
+                  <Alert variant="default" className="border-green-500 text-green-700 bg-green-50">
                     <CheckCircle className="h-5 w-5 text-green-500" />
                     <AlertTitle>Correct!</AlertTitle>
                   </Alert>
@@ -105,7 +111,7 @@ export default function ModuleQuizPage() {
                   <Alert variant="destructive">
                      <XCircle className="h-5 w-5" />
                     <AlertTitle>Incorrect</AlertTitle>
-                    <AlertDescription>The correct answer is: {q.answer}</AlertDescription>
+                    <AlertDescription>The correct answer is: <strong>{q.answer}</strong></AlertDescription>
                   </Alert>
                 )}
               </div>
