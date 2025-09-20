@@ -2,8 +2,8 @@
   "placeholderImages": [
     {
       "id": "dashboard-portfolio",
-      "description": "A dynamic stock market chart, representing the virtual portfolio feature.",
-      "imageUrl": "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=600&h=400&fit=crop",
+      "description": "A dynamic stock market chart on a screen, representing the virtual portfolio feature.",
+      "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=600&h=400&fit=crop",
       "imageHint": "stock market"
     },
     {
@@ -14,9 +14,9 @@
     },
     {
       "id": "dashboard-budget",
-      "description": "A person putting coins into a jar, representing budgeting and saving.",
-      "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=600&h=400&fit=crop",
-      "imageHint": "money planning"
+      "description": "A person writing in a notebook next to a calculator and piggy bank, representing budgeting.",
+      "imageUrl": "https://images.unsplash.com/photo-1554224155-169544351742?q=80&w=600&h=400&fit=crop",
+      "imageHint": "personal finance"
     },
     {
       "id": "dashboard-fraud",
