@@ -9,14 +9,14 @@
     {
       "id": "dashboard-learn",
       "description": "A person studying with a laptop and notebook, representing the learning modules.",
-      "imageUrl": "https://images.unsplash.com/photo-1491841550275-5b462bf9852a?q=80&w=600&h=400&fit=crop",
+      "imageUrl": "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=600&h=400&fit=crop",
       "imageHint": "person studying"
     },
     {
       "id": "dashboard-budget",
       "description": "A person putting coins into a jar, representing budgeting and saving.",
-      "imageUrl": "https://images.unsplash.com/photo-1579621970795-87facc2f976d?q=80&w=600&h=400&fit=crop",
-      "imageHint": "money saving"
+      "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=600&h=400&fit=crop",
+      "imageHint": "money planning"
     },
     {
       "id": "dashboard-fraud",
