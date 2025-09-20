@@ -25,27 +25,45 @@ export default function ModuleQuizPage() {
   const [score, setScore] = useState(0);
 
   useEffect(() => {
-    // Reset state when module changes to avoid stale data
+    if (!module) return;
+
+    // Reset state when module changes
     setSubmitted(false);
     setSelectedAnswers({});
     setScore(0);
     setCurrentQuestionIndex(0);
 
-    if (module && module.progress === 100) {
-      setSubmitted(true);
-      const savedAnswers: Record<string, string> = {};
-      let correctCount = 0;
-      module.quiz.questions.forEach(q => {
-        const storedAnswer = localStorage.getItem(`quiz-${moduleId}-q-${q.id}`);
-        if (storedAnswer) {
-            savedAnswers[q.id] = storedAnswer;
-            if (storedAnswer === q.answer) correctCount++;
+    // Load saved answers from localStorage for this specific module
+    const savedAnswers: Record<string, string> = {};
+    let correctCount = 0;
+    let isCompleted = true;
+
+    module.quiz.questions.forEach(q => {
+      const storedAnswer = localStorage.getItem(`quiz-${moduleId}-q-${q.id}`);
+      if (storedAnswer) {
+        savedAnswers[q.id] = storedAnswer;
+        if (storedAnswer === q.answer) {
+          correctCount++;
         }
-      });
-      setSelectedAnswers(savedAnswers);
-      setScore(correctCount);
+      } else {
+        isCompleted = false;
+      }
+    });
+
+    setSelectedAnswers(savedAnswers);
+    
+    if (isCompleted && module.quiz.questions.length > 0) {
+        setScore(correctCount);
+        setSubmitted(true);
+        const progress = Math.round((correctCount / module.quiz.questions.length) * 100);
+        if (module.progress !== progress) {
+          updateModuleProgress(moduleId, progress);
+        }
+    } else {
+        updateModuleProgress(moduleId, 0);
     }
-  }, [moduleId, module]);
+
+  }, [moduleId, module, updateModuleProgress]);
 
 
   if (!module || !module.quiz) {
@@ -85,7 +103,7 @@ export default function ModuleQuizPage() {
   
   const totalQuestions = module.quiz.questions.length;
   
-  const isQuizCompleted = submitted || module.progress === 100;
+  const isQuizCompleted = submitted;
   const finalScore = isQuizCompleted ? score : 0;
   const finalProgress = isQuizCompleted && totalQuestions > 0 ? Math.round((finalScore / totalQuestions) * 100) : 0;
 
@@ -218,7 +236,7 @@ export default function ModuleQuizPage() {
           </Button>
 
           {isLastQuestion ? (
-            <Button onClick={handleSubmit} disabled={submitted || Object.values(selectedAnswers).filter(Boolean).length < totalQuestions}>
+            <Button onClick={handleSubmit} disabled={submitted || Object.keys(selectedAnswers).length < totalQuestions}>
               Submit Answers <CheckCircle className="ml-2 h-4 w-4" />
             </Button>
           ) : (

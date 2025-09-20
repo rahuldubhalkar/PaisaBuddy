@@ -15,11 +15,11 @@ export interface Asset {
 }
 
 const initialAssets: Asset[] = [
-  { id: '1', name: 'Reliance Industries', ticker: 'RELIANCE', type: 'Stock', quantity: 10, avgPrice: 2800, currentPrice: 2850.55 },
-  { id: '2', name: 'Tata Consultancy Services', ticker: 'TCS', type: 'Stock', quantity: 15, avgPrice: 3800, currentPrice: 3855.20 },
-  { id: '3', name: 'HDFC Bank', ticker: 'HDFCBANK', type: 'Stock', quantity: 20, avgPrice: 1500, currentPrice: 1480.75 },
-  { id: '4', name: 'Parag Parikh Flexi Cap Fund', ticker: 'PPFCF', type: 'Mutual Fund', quantity: 50, avgPrice: 70, currentPrice: 75.50 },
-  { id: '5', name: 'Axis Bluechip Fund', ticker: 'AXISBLUE', type: 'Mutual Fund', quantity: 100, avgPrice: 50, currentPrice: 52.80 },
+  { id: 'RELIANCE', name: 'Reliance Industries', ticker: 'RELIANCE', type: 'Stock', quantity: 10, avgPrice: 2800, currentPrice: 2850.55 },
+  { id: 'TCS', name: 'Tata Consultancy Services', ticker: 'TCS', type: 'Stock', quantity: 15, avgPrice: 3800, currentPrice: 3855.20 },
+  { id: 'HDFCBANK', name: 'HDFC Bank', ticker: 'HDFCBANK', type: 'Stock', quantity: 20, avgPrice: 1500, currentPrice: 1480.75 },
+  { id: 'PPFCF', name: 'Parag Parikh Flexi Cap Fund', ticker: 'PPFCF', type: 'Mutual Fund', quantity: 50, avgPrice: 70, currentPrice: 75.50 },
+  { id: 'AXISBLUE', name: 'Axis Bluechip Fund', ticker: 'AXISBLUE', type: 'Mutual Fund', quantity: 100, avgPrice: 50, currentPrice: 52.80 },
 ];
 
 
@@ -32,6 +32,7 @@ interface PortfolioContextType {
     totalGainLossPercentage: number;
     handleTrade: (tradedAsset: Asset, quantity: number, action: 'Buy' | 'Sell') => void;
     addAsset: (asset: Asset) => void;
+    hasAsset: (assetId: string) => boolean;
 }
 
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
@@ -66,11 +67,11 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
             }
         } else { // Sell
             setVirtualCash(vc => vc + cost);
-            if (existingAsset && existingAsset.quantity > quantity) {
-            return prevAssets.map(a => a.id === tradedAsset.id ? { ...a, quantity: a.quantity - quantity } : a);
+            if (existingAsset && existingAsset.quantity >= quantity) {
+                return prevAssets.map(a => a.id === tradedAsset.id ? { ...a, quantity: a.quantity - quantity } : a);
             } else {
-            // If selling all, we keep the asset with 0 quantity to allow buying again.
-            return prevAssets.map(a => a.id === tradedAsset.id ? { ...a, quantity: 0 } : a);
+                // This case should not be hit due to UI validation, but as a fallback:
+                return prevAssets;
             }
         }
         });
@@ -86,6 +87,10 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         });
     }
 
+    const hasAsset = (assetId: string) => {
+        return assets.some(asset => asset.id === assetId);
+    }
+
     const value = {
         assets,
         virtualCash,
@@ -94,7 +99,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         totalGainLoss,
         totalGainLossPercentage,
         handleTrade,
-        addAsset
+        addAsset,
+        hasAsset,
     };
 
     return (

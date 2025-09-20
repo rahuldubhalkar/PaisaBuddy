@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { PlusCircle, Target } from 'lucide-react';
 import {
   Card,
@@ -30,50 +30,27 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useBudget } from '@/components/budget-provider';
 
 
-interface Transaction {
-  id: string;
-  type: 'Income' | 'Expense';
-  category: string;
-  amount: number;
-  date: string;
-}
-
-interface Goal {
-  id: string;
-  name: string;
-  targetAmount: number;
-  savedAmount: number;
-}
-
-const initialTransactions: Transaction[] = [
-  { id: '1', type: 'Income', category: 'Salary', amount: 50000, date: '2024-07-01' },
-  { id: '2', type: 'Expense', category: 'Rent', amount: 15000, date: '2024-07-02' },
-  { id: '3', type: 'Expense', category: 'Food', amount: 8000, date: '2024-07-05' },
-  { id: '4', type: 'Expense', category: 'Travel', amount: 3000, date: '2024-07-10' },
-];
-
-const initialGoals: Goal[] = [
-  { id: '1', name: 'Goa Trip', targetAmount: 25000, savedAmount: 10000 },
-  { id: '2', name: 'New Phone', targetAmount: 80000, savedAmount: 35000 },
-];
-
-function AddTransactionDialog({ onAddTransaction }: { onAddTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void }) {
-    const [type, setType] = useState<'Income' | 'Expense'>('Expense');
-    const [category, setCategory] = useState('');
-    const [amount, setAmount] = useState('');
+function AddTransactionDialog() {
+    const { handleAddTransaction } = useBudget();
+    const [type, setType] = React.useState<'Income' | 'Expense'>('Expense');
+    const [category, setCategory] = React.useState('');
+    const [amount, setAmount] = React.useState('');
+    const [open, setOpen] = React.useState(false);
 
     const handleSubmit = () => {
         if (category && amount) {
-            onAddTransaction({ type, category, amount: parseFloat(amount) });
+            handleAddTransaction({ type, category, amount: parseFloat(amount) });
             setCategory('');
             setAmount('');
+            setOpen(false);
         }
     }
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Transaction</Button>
             </DialogTrigger>
@@ -107,29 +84,30 @@ function AddTransactionDialog({ onAddTransaction }: { onAddTransaction: (transac
                     <DialogClose asChild>
                         <Button type="button" variant="secondary">Cancel</Button>
                     </DialogClose>
-                     <DialogClose asChild>
-                        <Button type="submit" onClick={handleSubmit}>Add Transaction</Button>
-                    </DialogClose>
+                    <Button type="submit" onClick={handleSubmit}>Add Transaction</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     )
 }
 
-function AddGoalDialog({ onAddGoal }: { onAddGoal: (goal: Omit<Goal, 'id' | 'savedAmount'>) => void }) {
-    const [name, setName] = useState('');
-    const [targetAmount, setTargetAmount] = useState('');
+function AddGoalDialog() {
+    const { handleAddGoal } = useBudget();
+    const [name, setName] = React.useState('');
+    const [targetAmount, setTargetAmount] = React.useState('');
+    const [open, setOpen] = React.useState(false);
 
     const handleSubmit = () => {
         if (name && targetAmount) {
-            onAddGoal({ name, targetAmount: parseFloat(targetAmount) });
+            handleAddGoal({ name, targetAmount: parseFloat(targetAmount) });
             setName('');
             setTargetAmount('');
+            setOpen(false);
         }
     }
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button><Target className="mr-2 h-4 w-4" /> Add New Goal</Button>
             </DialogTrigger>
@@ -151,9 +129,7 @@ function AddGoalDialog({ onAddGoal }: { onAddGoal: (goal: Omit<Goal, 'id' | 'sav
                     <DialogClose asChild>
                          <Button type="button" variant="secondary">Cancel</Button>
                     </DialogClose>
-                    <DialogClose asChild>
-                        <Button type="submit" onClick={handleSubmit}>Add Goal</Button>
-                    </DialogClose>
+                    <Button type="submit" onClick={handleSubmit}>Add Goal</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -162,31 +138,7 @@ function AddGoalDialog({ onAddGoal }: { onAddGoal: (goal: Omit<Goal, 'id' | 'sav
 
 
 export default function BudgetPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [goals, setGoals] = useState<Goal[]>(initialGoals);
-
-  const totalIncome = transactions.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
-  const totalExpense = transactions.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0);
-  const balance = totalIncome - totalExpense;
-
-  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
-    const newTransaction: Transaction = {
-        ...transaction,
-        id: (transactions.length + 1).toString(),
-        date: new Date().toISOString().split('T')[0],
-    };
-    setTransactions(prev => [...prev, newTransaction]);
-  };
-
-  const handleAddGoal = (goal: Omit<Goal, 'id' | 'savedAmount'>) => {
-    const newGoal: Goal = {
-        ...goal,
-        id: (goals.length + 1).toString(),
-        savedAmount: 0,
-    };
-    setGoals(prev => [...prev, newGoal]);
-  };
-
+  const { transactions, goals, totalIncome, totalExpense, balance } = useBudget();
 
   return (
     <div className="flex flex-col gap-6">
@@ -217,7 +169,7 @@ export default function BudgetPage() {
                 <CardTitle>Recent Transactions</CardTitle>
                 <CardDescription>A log of your income and expenses.</CardDescription>
               </div>
-              <AddTransactionDialog onAddTransaction={handleAddTransaction} />
+              <AddTransactionDialog />
             </CardHeader>
             <CardContent>
               <Table>
@@ -230,7 +182,7 @@ export default function BudgetPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.map(t => (
+                  {[...transactions].reverse().map(t => (
                     <TableRow key={t.id}>
                       <TableCell>
                         <Badge variant={t.type === 'Income' ? 'outline' : 'destructive'}>{t.type}</Badge>
@@ -254,7 +206,7 @@ export default function BudgetPage() {
                         <CardTitle>Your Financial Goals</CardTitle>
                         <CardDescription>Track your progress towards your savings goals.</CardDescription>
                     </div>
-                     <AddGoalDialog onAddGoal={handleAddGoal} />
+                     <AddGoalDialog />
                 </CardHeader>
                 <CardContent className="grid gap-6 md:grid-cols-2">
                     {goals.map(goal => {

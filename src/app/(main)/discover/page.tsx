@@ -146,12 +146,12 @@ export default function DiscoverPage() {
 }
 
 function AssetGrid({ assets }: { assets: typeof allAssets }) {
-  const { addAsset } = usePortfolio();
+  const { addAsset, hasAsset } = usePortfolio();
   const { toast } = useToast();
 
   const handleAddAsset = (asset: (typeof allAssets)[0]) => {
     addAsset({
-      id: asset.ticker,
+      id: asset.id,
       name: asset.name,
       ticker: asset.ticker,
       type: asset.type as 'Stock' | 'Mutual Fund',
@@ -172,53 +172,57 @@ function AssetGrid({ assets }: { assets: typeof allAssets }) {
   }
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {assets.map((asset) => (
-        <Card key={asset.id}>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-lg">{asset.name}</CardTitle>
-                <CardDescription>{asset.ticker}</CardDescription>
+      {assets.map((asset) => {
+        const alreadyInPortfolio = hasAsset(asset.id);
+        return (
+          <Card key={asset.id}>
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-lg">{asset.name}</CardTitle>
+                  <CardDescription>{asset.ticker}</CardDescription>
+                </div>
+                <Badge variant={asset.type === 'Stock' ? 'default' : 'secondary'}>
+                  {asset.type}
+                </Badge>
               </div>
-              <Badge variant={asset.type === 'Stock' ? 'default' : 'secondary'}>
-                {asset.type}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">
-              ₹{asset.currentPrice.toLocaleString('en-IN')}
-            </p>
-            <div
-              className={`flex items-center text-sm ${
-                asset.change >= 0 ? 'text-green-500' : 'text-red-500'
-              }`}
-            >
-              {asset.change >= 0 ? (
-                <TrendingUp className="mr-1 h-4 w-4" />
-              ) : (
-                <TrendingDown className="mr-1 h-4 w-4" />
-              )}
-              <span>{asset.change.toFixed(2)}%</span>
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {asset.type === 'Stock'
-                ? `Sector: ${asset.sector}`
-                : `Category: ${asset.category}`}
-            </p>
-          </CardContent>
-          <CardFooter>
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={() => handleAddAsset(asset)}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add to Portfolio
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">
+                ₹{asset.currentPrice.toLocaleString('en-IN')}
+              </p>
+              <div
+                className={`flex items-center text-sm ${
+                  asset.change >= 0 ? 'text-green-500' : 'text-red-500'
+                }`}
+              >
+                {asset.change >= 0 ? (
+                  <TrendingUp className="mr-1 h-4 w-4" />
+                ) : (
+                  <TrendingDown className="mr-1 h-4 w-4" />
+                )}
+                <span>{asset.change.toFixed(2)}%</span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {asset.type === 'Stock'
+                  ? `Sector: ${asset.sector}`
+                  : `Category: ${asset.category}`}
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() => handleAddAsset(asset)}
+                disabled={alreadyInPortfolio}
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                {alreadyInPortfolio ? 'Added' : 'Add to Portfolio'}
+              </Button>
+            </CardFooter>
+          </Card>
+        )
+      })}
     </div>
   );
 }
