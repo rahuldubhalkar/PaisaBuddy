@@ -23,7 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 type AssetType = 'Stock' | 'Mutual Fund';
 
@@ -82,7 +82,7 @@ function TradeDialog({ asset, action, onTrade, virtualCash }: { asset: Asset; ac
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant={action === 'Buy' ? 'outline' : 'destructive'} size="sm" className="w-full">
           {action === 'Buy' ? <Plus className="mr-1 h-4 w-4" /> : <Minus className="mr-1 h-4 w-4" />}
           {action}
         </Button>
@@ -168,7 +168,7 @@ export default function PortfolioPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <h1 className="text-3xl font-bold tracking-tight">Virtual Portfolio</h1>
       
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -199,71 +199,81 @@ export default function PortfolioPage() {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader><CardTitle>Your Assets</CardTitle></CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Quantity</TableHead>
-                    <TableHead className="text-right">Current Price</TableHead>
-                    <TableHead className="text-right">Total Value</TableHead>
-                    <TableHead className="text-right">Overall P&L</TableHead>
-                    <TableHead className="text-center">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {assets.map((asset) => {
-                    const totalValue = asset.quantity * asset.currentPrice;
-                    const gainLoss = (asset.currentPrice - asset.avgPrice) * asset.quantity;
-                    return (
-                      <TableRow key={asset.id}>
-                        <TableCell className="font-medium">{asset.name}</TableCell>
-                        <TableCell><Badge variant={asset.type === 'Stock' ? 'default' : 'secondary'}>{asset.type}</Badge></TableCell>
-                        <TableCell className="text-right">{asset.quantity}</TableCell>
-                        <TableCell className="text-right">₹{asset.currentPrice.toLocaleString('en-IN')}</TableCell>
-                        <TableCell className="text-right">₹{totalValue.toLocaleString('en-IN')}</TableCell>
-                        <TableCell className={`text-right font-medium ${gainLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                           {gainLoss >= 0 ? '+' : ''}₹{gainLoss.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                        </TableCell>
-                        <TableCell className="text-center space-x-2">
-                          <TradeDialog asset={asset} action="Buy" onTrade={handleTrade} virtualCash={virtualCash} />
-                          <TradeDialog asset={asset} action="Sell" onTrade={handleTrade} virtualCash={virtualCash} />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Portfolio Allocation</CardTitle>
-              <CardDescription>Visual breakdown of your investments.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div style={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                  <PieChart>
-                    <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+       <div className="grid grid-cols-1 gap-8">
+        <Card>
+          <CardHeader><CardTitle>Your Assets</CardTitle></CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[200px]">Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="text-right">Quantity</TableHead>
+                  <TableHead className="text-right">Current Price</TableHead>
+                  <TableHead className="text-right">Total Value</TableHead>
+                  <TableHead className="text-right">Overall P&L</TableHead>
+                  <TableHead className="w-[200px] text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {assets.map((asset) => {
+                  const totalValue = asset.quantity * asset.currentPrice;
+                  const gainLoss = (asset.currentPrice - asset.avgPrice) * asset.quantity;
+                  return (
+                    <TableRow key={asset.id}>
+                      <TableCell className="font-medium">{asset.name} <span className="text-xs text-muted-foreground">{asset.ticker}</span></TableCell>
+                      <TableCell><Badge variant={asset.type === 'Stock' ? 'default' : 'secondary'}>{asset.type}</Badge></TableCell>
+                      <TableCell className="text-right font-mono">{asset.quantity}</TableCell>
+                      <TableCell className="text-right font-mono">₹{asset.currentPrice.toLocaleString('en-IN')}</TableCell>
+                      <TableCell className="text-right font-mono">₹{totalValue.toLocaleString('en-IN')}</TableCell>
+                      <TableCell className={`text-right font-medium font-mono ${gainLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                         {gainLoss >= 0 ? '+' : ''}₹{gainLoss.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                      </TableCell>
+                      <TableCell>
+                          <div className="flex justify-center gap-2">
+                            <TradeDialog asset={asset} action="Buy" onTrade={handleTrade} virtualCash={virtualCash} />
+                            <TradeDialog asset={asset} action="Sell" onTrade={handleTrade} virtualCash={virtualCash} />
+                          </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Portfolio Allocation</CardTitle>
+            <CardDescription>Visual breakdown of your investments by asset.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div style={{ width: '100%', height: 350 }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+                      const RADIAN = Math.PI / 180;
+                      const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                      const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                      const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                      return (
+                        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+                          {`${(percent * 100).toFixed(0)}%`}
+                        </text>
+                      );
+                    }}>
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
