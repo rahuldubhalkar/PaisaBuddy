@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLearningModules } from '@/components/learning-modules-provider';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -25,27 +25,28 @@ export default function ModuleQuizPage() {
   const [score, setScore] = useState(0);
 
   useEffect(() => {
+    // Reset state when module changes to avoid stale data
+    setSubmitted(false);
+    setSelectedAnswers({});
+    setScore(0);
+    setCurrentQuestionIndex(0);
+
     if (module && module.progress === 100) {
       setSubmitted(true);
-      const correctAnswers: Record<string, string> = {};
+      const savedAnswers: Record<string, string> = {};
       let correctCount = 0;
       module.quiz.questions.forEach(q => {
         const storedAnswer = localStorage.getItem(`quiz-${moduleId}-q-${q.id}`);
         if (storedAnswer) {
-            correctAnswers[q.id] = storedAnswer;
+            savedAnswers[q.id] = storedAnswer;
             if (storedAnswer === q.answer) correctCount++;
         }
       });
-      setSelectedAnswers(correctAnswers);
+      setSelectedAnswers(savedAnswers);
       setScore(correctCount);
-
-    } else {
-      setSubmitted(false);
-      setSelectedAnswers({});
-      setScore(0);
-      setCurrentQuestionIndex(0);
     }
   }, [moduleId, module]);
+
 
   if (!module || !module.quiz) {
     notFound();
@@ -59,7 +60,6 @@ export default function ModuleQuizPage() {
   const handleSubmit = () => {
     if (submitted) return;
     const calculatedScore = module.quiz.questions.reduce((correct, q) => {
-      // Save answer to local storage for review later
       if(selectedAnswers[q.id]) {
         localStorage.setItem(`quiz-${moduleId}-q-${q.id}`, selectedAnswers[q.id]);
       }
@@ -76,17 +76,18 @@ export default function ModuleQuizPage() {
     module.quiz.questions.forEach(q => {
         localStorage.removeItem(`quiz-${moduleId}-q-${q.id}`);
     });
-    setSelectedAnswers({});
     setSubmitted(false);
+    setSelectedAnswers({});
     setScore(0);
     setCurrentQuestionIndex(0);
     updateModuleProgress(moduleId, 0);
   };
   
-  const isQuizCompleted = submitted || module.progress === 100;
   const totalQuestions = module.quiz.questions.length;
+  
+  const isQuizCompleted = submitted || module.progress === 100;
   const finalScore = isQuizCompleted ? score : 0;
-  const finalProgress = isQuizCompleted ? Math.round((finalScore / totalQuestions) * 100) : 0;
+  const finalProgress = isQuizCompleted && totalQuestions > 0 ? Math.round((finalScore / totalQuestions) * 100) : 0;
 
   const currentQuestion = module.quiz.questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
@@ -169,6 +170,13 @@ export default function ModuleQuizPage() {
             })}
           </div>
         </CardContent>
+        <CardFooter className="flex justify-center">
+            <Button asChild>
+                <Link href="/learn">
+                Finish Review
+                </Link>
+            </Button>
+        </CardFooter>
       </Card>
     );
   }
@@ -181,7 +189,7 @@ export default function ModuleQuizPage() {
           <CardTitle>Quiz: {module.title}</CardTitle>
         </div>
         <CardDescription>Question {currentQuestionIndex + 1} of {totalQuestions}</CardDescription>
-        <Progress value={((currentQuestionIndex + 1) / totalQuestions) * 100} className="h-2 mt-2" />
+        <Progress value={((currentQuestionIndex) / totalQuestions) * 100} className="h-2 mt-2" />
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
@@ -189,6 +197,7 @@ export default function ModuleQuizPage() {
           <RadioGroup
             value={selectedAnswers[currentQuestion.id] || ''}
             onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}
+            disabled={submitted}
           >
             {currentQuestion.options.map(opt => (
               <div className="flex items-center space-x-3 p-3 rounded-lg border border-transparent hover:border-primary has-[:checked]:bg-primary/10 has-[:checked]:border-primary" key={opt}>
@@ -203,17 +212,17 @@ export default function ModuleQuizPage() {
           <Button 
             variant="outline"
             onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
-            disabled={currentQuestionIndex === 0}
+            disabled={currentQuestionIndex === 0 || submitted}
           >
             <ChevronLeft className="mr-2 h-4 w-4" /> Previous
           </Button>
 
           {isLastQuestion ? (
-            <Button onClick={handleSubmit} disabled={Object.keys(selectedAnswers).length < totalQuestions}>
+            <Button onClick={handleSubmit} disabled={submitted || Object.values(selectedAnswers).filter(Boolean).length < totalQuestions}>
               Submit Answers <CheckCircle className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={() => setCurrentQuestionIndex(prev => prev + 1)} disabled={!selectedAnswers[currentQuestion.id]}>
+            <Button onClick={() => setCurrentQuestionIndex(prev => prev + 1)} disabled={!selectedAnswers[currentQuestion.id] || submitted}>
               Next <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           )}
