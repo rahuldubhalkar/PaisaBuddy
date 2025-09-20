@@ -3,25 +3,25 @@
     {
       "id": "dashboard-portfolio",
       "description": "A dynamic stock market chart, representing the virtual portfolio feature.",
-      "imageUrl": "https://picsum.photos/seed/stockmarket/600/400",
-      "imageHint": "stock market"
+      "imageUrl": "https://images.unsplash.com/photo-1624953901718-e21ee3934d87?q=80&w=600&h=400&fit=crop",
+      "imageHint": "portfolio chart"
     },
     {
       "id": "dashboard-learn",
       "description": "A person reading a book in a library, representing the learning modules.",
-      "imageUrl": "https://picsum.photos/seed/library/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=600&h=400&fit=crop",
       "imageHint": "library education"
     },
     {
       "id": "dashboard-budget",
       "description": "A person calculating their budget with a calculator and notebook.",
-      "imageUrl": "https://picsum.photos/seed/calculating/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=600&h=400&fit=crop",
       "imageHint": "budget calculator"
     },
     {
       "id": "dashboard-fraud",
       "description": "A magnifying glass over a computer screen with code, representing fraud detection.",
-      "imageUrl": "https://picsum.photos/seed/magnifying/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1573495782862-06915330a3c2?q=80&w=600&h=400&fit=crop",
       "imageHint": "fraud detection"
     }
   ]
