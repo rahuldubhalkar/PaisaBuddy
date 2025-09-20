@@ -14,9 +14,9 @@
     },
     {
       "id": "dashboard-budget",
-      "description": "Indian rupee notes and coins, representing money and budgeting.",
-      "imageUrl": "https://images.unsplash.com/photo-1627988358498-9a7a61595c56?q=80&w=600&h=400&fit=crop",
-      "imageHint": "money budget"
+      "description": "A person counting Indian rupee notes, representing money and budgeting.",
+      "imageUrl": "https://images.unsplash.com/photo-1596468233509-c852a3a5f4f8?q=80&w=600&h=400&fit=crop",
+      "imageHint": "counting money"
     },
     {
       "id": "dashboard-fraud",
