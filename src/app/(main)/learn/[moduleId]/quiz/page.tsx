@@ -26,45 +26,38 @@ export default function ModuleQuizPage() {
 
   useEffect(() => {
     if (!module) return;
-
-    // Reset state when module changes
+  
     setSubmitted(false);
     setSelectedAnswers({});
     setScore(0);
     setCurrentQuestionIndex(0);
-
-    // Load saved answers from localStorage for this specific module
-    const savedAnswers: Record<string, string> = {};
-    let correctCount = 0;
-    let isCompleted = true;
-
-    module.quiz.questions.forEach(q => {
-      const storedAnswer = localStorage.getItem(`quiz-${moduleId}-q-${q.id}`);
-      if (storedAnswer) {
-        savedAnswers[q.id] = storedAnswer;
-        if (storedAnswer === q.answer) {
-          correctCount++;
-        }
-      } else {
-        isCompleted = false;
-      }
-    });
-
-    setSelectedAnswers(savedAnswers);
-    
-    if (isCompleted && module.quiz.questions.length > 0) {
+  
+    // Check if the quiz was already completed by checking progress
+    if (module.progress === 100) {
+        const savedAnswers: Record<string, string> = {};
+        let correctCount = 0;
+        module.quiz.questions.forEach(q => {
+            const storedAnswer = localStorage.getItem(`quiz-${moduleId}-q-${q.id}`);
+            if (storedAnswer) {
+                savedAnswers[q.id] = storedAnswer;
+                if (storedAnswer === q.answer) {
+                    correctCount++;
+                }
+            }
+        });
+        setSelectedAnswers(savedAnswers);
         setScore(correctCount);
         setSubmitted(true);
-        const progress = Math.round((correctCount / module.quiz.questions.length) * 100);
-        if (module.progress !== progress) {
-          updateModuleProgress(moduleId, progress);
-        }
     } else {
+        // Clear previous answers if quiz is not complete
+         module.quiz.questions.forEach(q => {
+            localStorage.removeItem(`quiz-${moduleId}-q-${q.id}`);
+        });
         updateModuleProgress(moduleId, 0);
     }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [moduleId, module]);
+  }, [moduleId, getModuleById]);
 
 
   if (!module || !module.quiz) {
