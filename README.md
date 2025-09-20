@@ -26,10 +26,8 @@ Paisabuddy is a mobile-first financial literacy platform tailored for young Indi
         1.Android Stdio
         2.Firebase console
         3.Gemini api
-
         4.OpenAi
 
-=======
 # Paisabuddy: Financial Literacy for Young India
 
 ## The Problem
@@ -52,3 +50,4 @@ Paisabuddy is a mobile-first platform designed to bridge this financial literacy
 
 - **Fraud Identification Challenges**: A dedicated module with realistic scenarios and challenges that trains users to identify and avoid common digital financial frauds, such as phishing scams, UPI fraud, and fake investment schemes.
 >>>>>>> cd75c70 (As a new generation of young Indians enters the workforce, a significant)
+
