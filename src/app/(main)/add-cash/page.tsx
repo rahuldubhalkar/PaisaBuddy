@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { IndianRupee, CreditCard, Landmark, Smartphone, CheckCircle, ArrowLeft } from 'lucide-react';
+import { IndianRupee, CreditCard, Landmark, Banknote, CheckCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -17,11 +17,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { usePortfolio } from '@/components/portfolio-provider';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-type PaymentMethod = 'Google Pay' | 'PhonePe' | 'UPI / Bank';
-type PageState = 'enterAmount' | 'makePayment' | 'processing' | 'success';
+type PaymentMethod = 'Credit / Debit Card' | 'UPI / Bank';
+type PageState = 'enterAmount' | 'cardPayment' | 'otpVerification' | 'upiPayment' | 'processing' | 'success';
 
 export default function AddCashPage() {
   const [amount, setAmount] = useState('');
@@ -29,13 +28,19 @@ export default function AddCashPage() {
   const [state, setState] = useState<PageState>('enterAmount');
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
 
+  // Mock card details
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [otp, setOtp] = useState('');
+
   const router = useRouter();
   const { toast } = useToast();
   const { addCash } = usePortfolio();
 
   const qrCodePlaceholder = PlaceHolderImages.find(p => p.id === 'qr-code');
 
-  const handlePaymentMethodSelect = (paymentMethod: PaymentMethod) => {
+  const handleMethodSelect = (paymentMethod: PaymentMethod) => {
     const numericAmount = parseFloat(amount);
     if (!numericAmount || numericAmount <= 0) {
       toast({
@@ -46,10 +51,39 @@ export default function AddCashPage() {
       return;
     }
     setSelectedMethod(paymentMethod);
-    setState('makePayment');
+    if (paymentMethod === 'Credit / Debit Card') {
+      setState('cardPayment');
+    } else {
+      setState('upiPayment');
+    }
   };
 
-  const handleSubmitUtr = () => {
+  const handleCardSubmit = () => {
+    // Basic validation for demonstration
+    if (cardNumber.length < 16 || cardExpiry.length < 5 || cardCvv.length < 3) {
+      toast({
+        title: 'Invalid Card Details',
+        description: 'Please enter valid card information.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setState('otpVerification');
+  };
+  
+  const handleOtpSubmit = () => {
+    if (otp.length < 6) {
+      toast({
+        title: 'Invalid OTP',
+        description: 'Please enter a valid 6-digit OTP.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    processPayment();
+  }
+
+  const handleUtrSubmit = () => {
     if (!utr || utr.length < 12) {
       toast({
         title: 'Invalid UTR',
@@ -58,9 +92,11 @@ export default function AddCashPage() {
       });
       return;
     }
+    processPayment();
+  };
 
+  const processPayment = () => {
     setState('processing');
-
     setTimeout(() => {
       const numericAmount = parseFloat(amount);
       addCash(numericAmount);
@@ -71,11 +107,15 @@ export default function AddCashPage() {
       });
       setTimeout(() => router.push('/portfolio'), 2000); // Redirect after showing success
     }, 2000);
-  };
+  }
   
   const handleGoBack = () => {
     setState('enterAmount');
     setUtr('');
+    setCardNumber('');
+    setCardExpiry('');
+    setCardCvv('');
+    setOtp('');
     setSelectedMethod(null);
   }
 
@@ -108,22 +148,16 @@ export default function AddCashPage() {
               
               <div className="space-y-4">
                    <Label>Select Payment Method</Label>
-                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <Button variant="outline" size="lg" className="h-auto py-4" onClick={() => handlePaymentMethodSelect('Google Pay')}>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Button variant="outline" size="lg" className="h-auto py-4" onClick={() => handleMethodSelect('Credit / Debit Card')}>
                           <div className="flex flex-col items-center gap-2">
                               <CreditCard className="h-8 w-8" />
-                              <span>Google Pay</span>
+                              <span>Card</span>
                           </div>
                       </Button>
-                       <Button variant="outline" size="lg" className="h-auto py-4" onClick={() => handlePaymentMethodSelect('PhonePe')}>
+                       <Button variant="outline" size="lg" className="h-auto py-4" onClick={() => handleMethodSelect('UPI / Bank')}>
                           <div className="flex flex-col items-center gap-2">
-                              <Smartphone className="h-8 w-8" />
-                              <span>PhonePe</span>
-                          </div>
-                      </Button>
-                       <Button variant="outline" size="lg" className="h-auto py-4" onClick={() => handlePaymentMethodSelect('UPI / Bank')}>
-                          <div className="flex flex-col items-center gap-2">
-                              <Landmark className="h-8 w-8" />
+                              <Banknote className="h-8 w-8" />
                               <span>UPI / Bank</span>
                           </div>
                       </Button>
@@ -132,8 +166,71 @@ export default function AddCashPage() {
             </CardContent>
           </>
         );
+      
+      case 'cardPayment':
+        return (
+          <>
+            <CardHeader>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={handleGoBack} className="h-8 w-8">
+                        <ArrowLeft className="h-5 w-5"/>
+                    </Button>
+                    <div>
+                        <CardTitle>Enter Card Details</CardTitle>
+                        <CardDescription>Amount: ₹{parseFloat(amount).toLocaleString('en-IN')}</CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="cardNumber">Card Number</Label>
+                <Input id="cardNumber" placeholder="0000 0000 0000 0000" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cardExpiry">Expiry Date</Label>
+                  <Input id="cardExpiry" placeholder="MM/YY" value={cardExpiry} onChange={(e) => setCardExpiry(e.target.value)} />
+                </div>
+                 <div className="space-y-2">
+                  <Label htmlFor="cardCvv">CVV</Label>
+                  <Input id="cardCvv" placeholder="123" value={cardCvv} onChange={(e) => setCardCvv(e.target.value)} />
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full" onClick={handleCardSubmit}>Pay ₹{parseFloat(amount).toLocaleString('en-IN')}</Button>
+            </CardFooter>
+          </>
+        );
+        
+      case 'otpVerification':
+        return (
+           <>
+            <CardHeader>
+                <div className="flex items-center gap-2">
+                     <Button variant="ghost" size="icon" onClick={() => setState('cardPayment')} className="h-8 w-8">
+                        <ArrowLeft className="h-5 w-5"/>
+                    </Button>
+                    <div>
+                        <CardTitle>Verify Payment</CardTitle>
+                        <CardDescription>Enter the OTP sent to your mock number.</CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                  <Label htmlFor="otp">One-Time Password (OTP)</Label>
+                  <Input id="otp" placeholder="Enter 6-digit OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
+                  <p className="text-sm text-muted-foreground pt-1">Hint: Any 6 digits will work.</p>
+              </div>
+            </CardContent>
+            <CardFooter>
+                <Button className="w-full" onClick={handleOtpSubmit}>Confirm Payment</Button>
+            </CardFooter>
+          </>
+        )
 
-      case 'makePayment':
+      case 'upiPayment':
         return (
           <>
             <CardHeader>
@@ -170,14 +267,14 @@ export default function AddCashPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full" onClick={handleSubmitUtr}>Submit UTR</Button>
+              <Button className="w-full" onClick={handleUtrSubmit}>Submit UTR</Button>
             </CardFooter>
           </>
         );
 
       case 'processing':
         return (
-          <CardContent className="flex flex-col items-center justify-center h-64 gap-4">
+          <CardContent className="flex flex-col items-center justify-center min-h-[400px] gap-4">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
             <p className="text-muted-foreground">Verifying payment, please wait...</p>
           </CardContent>
@@ -185,7 +282,7 @@ export default function AddCashPage() {
       
       case 'success':
          return (
-          <CardContent className="flex flex-col items-center justify-center h-64 gap-4">
+          <CardContent className="flex flex-col items-center justify-center min-h-[400px] gap-4">
             <CheckCircle className="h-12 w-12 text-green-500" />
             <h2 className="text-2xl font-bold">Payment Successful!</h2>
             <p className="text-muted-foreground">₹{parseFloat(amount).toLocaleString('en-IN')} added. Redirecting...</p>
