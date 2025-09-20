@@ -1,41 +1,13 @@
 import React from 'react';
+import Image from 'next/image';
 
 export const Logo = ({ className }: { className?: string }) => (
-  <svg
+  <Image
+    src="/logo.png"
+    alt="Paisa Buddy Logo"
+    width={40}
+    height={40}
     className={className}
-    width="1em"
-    height="1em"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M12 2L2 7V17L12 22L22 17V7L12 2Z"
-      stroke="hsl(var(--primary))"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M2 7L12 12L22 7"
-      stroke="hsl(var(--primary))"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M12 12V22"
-      stroke="hsl(var(--primary))"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M17 9.5L7 14.5"
-      stroke="hsl(var(--accent))"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
+    unoptimized // Add this if your logo is a GIF or has animation, otherwise it can be removed for PNG/JPG.
+  />
 );
