@@ -8,6 +8,8 @@ import {
   GraduationCap,
   ShieldAlert,
   Wallet,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import {
@@ -21,6 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useLearningModules } from '@/components/learning-modules-provider';
 import { Progress } from '@/components/ui/progress';
+import { useAuth } from '@/components/auth-provider';
 
 const features = [
   {
@@ -92,21 +95,56 @@ function LearningProgress() {
   )
 }
 
+function WelcomeSection() {
+    const { user } = useAuth();
+    
+    return (
+         <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Welcome {user ? user.displayName?.split(' ')[0] || 'back' : 'to Paisa Pathshala'}!
+            </h1>
+            <p className="text-muted-foreground">
+              Your journey to financial freedom starts here. Explore our tools and
+              resources.
+            </p>
+         </div>
+    )
+}
+
+function AuthCallToAction() {
+  return (
+    <Card className="col-span-1 md:col-span-2 bg-primary/10 border-primary">
+      <CardHeader>
+        <CardTitle>Join Paisa Pathshala</CardTitle>
+        <CardDescription>Create an account to save your progress, build your virtual portfolio, and track your achievements.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col sm:flex-row gap-4">
+        <Button asChild className="w-full sm:w-auto">
+          <Link href="/signup">
+            <UserPlus className="mr-2 h-4 w-4" />
+            Create Account
+          </Link>
+        </Button>
+         <Button asChild variant="secondary" className="w-full sm:w-auto">
+          <Link href="/login">
+            <LogIn className="mr-2 h-4 w-4" />
+            Sign In
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function DashboardPage() {
+  const { user } = useAuth();
+
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Welcome to Paisa Pathshala
-        </h1>
-        <p className="text-muted-foreground">
-          Your journey to financial freedom starts here. Explore our tools and
-          resources.
-        </p>
-      </div>
+      <WelcomeSection />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <LearningProgress />
+        {user ? <LearningProgress /> : <AuthCallToAction />}
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

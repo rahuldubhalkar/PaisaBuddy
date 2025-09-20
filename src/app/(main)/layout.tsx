@@ -12,6 +12,8 @@ import {
   Wallet,
   Trophy,
   Search,
+  LogOut,
+  User,
 } from 'lucide-react';
 
 import {
@@ -24,12 +26,23 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { PortfolioProvider } from '@/components/portfolio-provider';
 import { BudgetProvider } from '@/components/budget-provider';
 import { LearningModulesProvider } from '@/components/learning-modules-provider';
+import { AuthProvider, useAuth } from '@/components/auth-provider';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -42,12 +55,82 @@ const navItems = [
   { href: '/generate', label: 'Content Generator', icon: Sparkles },
 ];
 
-export default function MainLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function UserProfileButton() {
+  const { user, signOut } = useAuth();
+
+  if (!user) {
+    return (
+      <div className="flex w-full gap-2">
+        <Button asChild className="flex-1">
+          <Link href="/login">Login</Link>
+        </Button>
+        <Button asChild variant="outline" className="flex-1">
+          <Link href="/signup">Sign Up</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const userInitial = user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          className="w-full justify-start h-12"
+        >
+          <div className="flex items-center gap-3">
+             <Avatar className="h-8 w-8">
+              {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />}
+              <AvatarFallback>{userInitial}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col items-start text-left">
+              <p className="font-medium text-sm truncate">{user.displayName || user.email}</p>
+              <p className="text-xs text-muted-foreground">View Profile</p>
+            </div>
+          </div>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={signOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Log out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function MainLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!loading && !user) {
+      if (pathname !== '/login' && pathname !== '/signup' && pathname !== '/forgot-password') {
+         router.push('/login');
+      }
+    }
+  }, [user, loading, pathname, router]);
+
+  if (loading) {
+    return <div className="flex h-screen w-screen items-center justify-center">Loading...</div>;
+  }
+  
+  if (!user) {
+    return <>{children}</>;
+  }
 
   return (
     <LearningModulesProvider>
@@ -96,6 +179,9 @@ export default function MainLayout({
                   ))}
                 </SidebarMenu>
               </SidebarContent>
+              <SidebarFooter className="p-2">
+                <UserProfileButton />
+              </SidebarFooter>
             </Sidebar>
             <SidebarInset>
               <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:hidden">
@@ -113,5 +199,18 @@ export default function MainLayout({
         </PortfolioProvider>
       </BudgetProvider>
     </LearningModulesProvider>
+  );
+}
+
+import { useRouter } from 'next/navigation';
+export default function MainLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <AuthProvider>
+      <MainLayoutContent>{children}</MainLayoutContent>
+    </AuthProvider>
   );
 }
