@@ -3,25 +3,25 @@
     {
       "id": "dashboard-portfolio",
       "description": "A chart showing investment growth, representing the virtual portfolio feature.",
-      "imageUrl": "https://picsum.photos/seed/1/600/400",
+      "imageUrl": "https://picsum.photos/seed/invest/600/400",
       "imageHint": "investment chart"
     },
     {
       "id": "dashboard-learn",
       "description": "An open book with glowing icons, representing the learning modules.",
-      "imageUrl": "https://picsum.photos/seed/2/600/400",
+      "imageUrl": "https://picsum.photos/seed/learn/600/400",
       "imageHint": "education book"
     },
     {
       "id": "dashboard-budget",
       "description": "A piggy bank with coins, representing the budgeting tools.",
-      "imageUrl": "https://picsum.photos/seed/3/600/400",
+      "imageUrl": "https://picsum.photos/seed/budget/600/400",
       "imageHint": "piggy bank"
     },
     {
       "id": "dashboard-fraud",
       "description": "A shield icon protecting from digital threats, representing fraud identification.",
-      "imageUrl": "https://picsum.photos/seed/4/600/400",
+      "imageUrl": "https://picsum.photos/seed/security/600/400",
       "imageHint": "security shield"
     }
   ]
