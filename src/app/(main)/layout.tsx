@@ -58,6 +58,7 @@ const navItems = [
 
 function UserProfileButton() {
   const { user, signOut } = useAuth();
+  const router = useRouter();
 
   if (!user) {
     return (
@@ -73,6 +74,11 @@ function UserProfileButton() {
   }
 
   const userInitial = user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  }
 
   return (
     <DropdownMenu>
@@ -103,7 +109,7 @@ function UserProfileButton() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={signOut}>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>
@@ -118,23 +124,24 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   React.useEffect(() => {
-    if (!loading && !user) {
-      if (pathname !== '/login' && pathname !== '/signup' && pathname !== '/forgot-password') {
-         router.push('/login');
-      }
+    // If still loading, do nothing.
+    if (loading) return;
+
+    // If there is no user, redirect to login page.
+    if (!user) {
+      router.push('/login');
     }
-  }, [user, loading, pathname, router]);
+  }, [user, loading, router]);
+
 
   if (loading) {
     return <div className="flex h-screen w-screen items-center justify-center">Loading...</div>;
   }
   
-  if (!user && (pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password')) {
-    return <>{children}</>;
-  }
-
+  // If no user, the useEffect above will trigger a redirect, so we can render a loading state
+  // or null to avoid flashing the main layout.
   if (!user) {
-      return null;
+    return <div className="flex h-screen w-screen items-center justify-center">Loading...</div>;
   }
 
   return (

@@ -13,6 +13,8 @@ import {
     signInWithPopup,
     updateProfile,
     Auth,
+    getRedirectResult,
+    signInWithRedirect,
 } from 'firebase/auth';
 import { firebaseApp } from '@/lib/firebase';
 import { getFirestore, doc, setDoc, getDoc, Firestore } from 'firebase/firestore';
@@ -115,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = { user, loading, signIn, signUp, signOut, sendPasswordReset, signInWithGoogle };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

@@ -12,15 +12,17 @@ export default function AuthLayout({
   const router = useRouter();
 
   useEffect(() => {
+    // If the user is logged in, redirect them away from auth pages.
     if (!loading && user) {
       router.push('/');
     }
   }, [user, loading, router]);
 
+  // While loading or if user is logged in (and redirecting), show a loading screen.
   if (loading || user) {
-    // Show a loading state or nothing while redirecting
     return <div className="flex h-screen w-screen items-center justify-center">Loading...</div>;
   }
 
+  // If not loading and no user, show the auth page (login/signup).
   return <>{children}</>;
 }
