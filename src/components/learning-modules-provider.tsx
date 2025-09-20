@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { modules as initialModulesData, Module } from '@/lib/learning-modules-data';
 
 interface LearningModulesContextType {
@@ -12,7 +12,30 @@ interface LearningModulesContextType {
 const LearningModulesContext = createContext<LearningModulesContextType | undefined>(undefined);
 
 export function LearningModulesProvider({ children }: { children: ReactNode }) {
-  const [modules, setModules] = useState<Module[]>(initialModulesData);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const storedModules = localStorage.getItem('learningModules');
+      if (storedModules) {
+        setModules(JSON.parse(storedModules));
+      } else {
+        setModules(initialModulesData);
+      }
+    } catch (error) {
+      console.error("Failed to load learning modules from localStorage", error);
+      setModules(initialModulesData);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      localStorage.setItem('learningModules', JSON.stringify(modules));
+    }
+  }, [modules, loading]);
 
   const updateModuleProgress = (moduleId: string, newProgress: number) => {
     setModules(prevModules =>
@@ -27,6 +50,10 @@ export function LearningModulesProvider({ children }: { children: ReactNode }) {
   const getModuleById = (moduleId: string) => {
     return modules.find(m => m.id === moduleId);
   };
+  
+  if (loading) {
+    return null;
+  }
 
   return (
     <LearningModulesContext.Provider value={{ modules, updateModuleProgress, getModuleById }}>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 type AssetType = 'Stock' | 'Mutual Fund';
 
@@ -39,8 +39,40 @@ interface PortfolioContextType {
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
-    const [allPortfolioAssets, setAllPortfolioAssets] = useState<Asset[]>(initialAssets);
+    const [allPortfolioAssets, setAllPortfolioAssets] = useState<Asset[]>([]);
     const [virtualCash, setVirtualCash] = useState<number>(100000);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        try {
+            const storedAssets = localStorage.getItem('portfolioAssets');
+            const storedCash = localStorage.getItem('virtualCash');
+            if (storedAssets) {
+                setAllPortfolioAssets(JSON.parse(storedAssets));
+            } else {
+                setAllPortfolioAssets(initialAssets);
+            }
+            if (storedCash) {
+                setVirtualCash(JSON.parse(storedCash));
+            } else {
+                setVirtualCash(100000);
+            }
+        } catch (error) {
+            console.error("Failed to load from localStorage", error);
+            setAllPortfolioAssets(initialAssets);
+            setVirtualCash(100000);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!loading) {
+            localStorage.setItem('portfolioAssets', JSON.stringify(allPortfolioAssets));
+            localStorage.setItem('virtualCash', JSON.stringify(virtualCash));
+        }
+    }, [allPortfolioAssets, virtualCash, loading]);
+
 
     const heldAssets = allPortfolioAssets.filter(asset => asset.quantity > 0);
 
@@ -106,6 +138,10 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         addAsset,
         hasAsset,
     };
+
+    if (loading) {
+        return null; // Or a loading spinner
+    }
 
     return (
         <PortfolioContext.Provider value={value}>

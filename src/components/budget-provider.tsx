@@ -45,18 +45,43 @@ interface BudgetContextType {
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
 export function BudgetProvider({ children }: { children: ReactNode }) {
-    const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-    const [goals, setGoals] = useState<Goal[]>(initialGoals);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [goals, setGoals] = useState<Goal[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        try {
+            const storedTransactions = localStorage.getItem('budgetTransactions');
+            const storedGoals = localStorage.getItem('budgetGoals');
+            if (storedTransactions) {
+                setTransactions(JSON.parse(storedTransactions));
+            } else {
+                setTransactions(initialTransactions);
+            }
+            if (storedGoals) {
+                setGoals(JSON.parse(storedGoals));
+            } else {
+                setGoals(initialGoals);
+            }
+        } catch (error) {
+            console.error("Failed to load budget data from localStorage", error);
+            setTransactions(initialTransactions);
+            setGoals(initialGoals);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!loading) {
+            localStorage.setItem('budgetTransactions', JSON.stringify(transactions));
+            localStorage.setItem('budgetGoals', JSON.stringify(goals));
+        }
+    }, [transactions, goals, loading]);
 
     const totalIncome = transactions.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
     const totalExpense = transactions.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0);
-    const totalSavedForGoals = goals.reduce((sum, g) => sum + g.savedAmount, 0);
     
-    // We assume the initial saved amounts were part of the balance, so we derive the starting cash.
-    const initialCash = 100000;
-    const currentCash = initialCash + totalIncome - totalExpense;
-
-    // The 'balance' is what's left after expenses from income, not from total cash.
     const balance = totalIncome - totalExpense;
     const unallocatedBalance = balance > 0 ? balance - goals.reduce((sum, g) => sum + g.savedAmount, 0) : 0;
 
@@ -128,6 +153,10 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         addContributionToGoal,
         allocateSavingsToGoals,
     };
+    
+    if (loading) {
+        return null;
+    }
 
     return (
         <BudgetContext.Provider value={value}>
