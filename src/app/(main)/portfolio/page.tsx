@@ -48,6 +48,7 @@ import {
   Legend,
 } from 'recharts';
 import { usePortfolio, Asset } from '@/components/portfolio-provider';
+import { Header } from '@radix-ui/react-accordion';
 
 function TradeDialog({
   asset,
@@ -359,7 +360,7 @@ export default function PortfolioPage() {
               <CardDescription>
                 Visual breakdown of your investments by asset.
               </CardDescription>
-            </Header>
+            </CardHeader>
             <CardContent>
             {hasHoldings ? (
               <div style={{ width: '100%', height: 350 }}>
