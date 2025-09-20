@@ -306,7 +306,7 @@ export default function PortfolioPage() {
                           })}
                         </TableCell>
                         <TableCell>
-                          <div className="flex justify-center gap-2">
+                           <div className="flex items-center justify-center gap-2">
                             <TradeDialog asset={asset} action="Buy" />
                             <TradeDialog asset={asset} action="Sell" />
                           </div>
