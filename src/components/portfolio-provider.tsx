@@ -69,7 +69,9 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
             if (existingAsset && existingAsset.quantity > quantity) {
                 return prevAssets.map(a => a.id === tradedAsset.id ? { ...a, quantity: a.quantity - quantity } : a);
             } else if (existingAsset && existingAsset.quantity === quantity) {
-                 return prevAssets.filter(a => a.id !== tradedAsset.id);
+                 return prevAssets.map(a =>
+                  a.id === tradedAsset.id ? { ...a, quantity: 0, avgPrice: 0 } : a
+                );
             } else {
                 // This case should not be hit due to UI validation, but as a fallback:
                 return prevAssets;

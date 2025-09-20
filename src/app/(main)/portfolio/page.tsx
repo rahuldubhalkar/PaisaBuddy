@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -97,18 +96,15 @@ function TradeDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant={action === 'Buy' ? 'outline' : 'destructive'}
-          size="sm"
-          disabled={action === 'Sell' && asset.quantity === 0}
-        >
-          {action === 'Buy' ? (
-            <Plus className="mr-1 h-4 w-4" />
-          ) : (
-            <Minus className="mr-1 h-4 w-4" />
-          )}
-          {action}
-        </Button>
+        <div className="flex justify-center">
+            <Button
+                variant={action === 'Buy' ? 'outline' : 'destructive'}
+                size="sm"
+            >
+                {action === 'Buy' ? <Plus className="mr-1 h-4 w-4" /> : <Minus className="mr-1 h-4 w-4" />}
+                {action}
+            </Button>
+        </div>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -166,6 +162,8 @@ const COLORS = ['#3F51B5', '#7E57C2', '#4CAF50', '#FFC107', '#F44336', '#2196F3'
 
 export default function PortfolioPage() {
   const { assets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage } = usePortfolio();
+  
+  const displayedAssets = assets;
 
   const chartData = assets
     .filter(asset => asset.quantity > 0)
@@ -257,7 +255,7 @@ export default function PortfolioPage() {
               <CardTitle>Your Assets</CardTitle>
             </CardHeader>
             <CardContent>
-             {assets.length > 0 ? (
+             {displayedAssets.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -346,7 +344,7 @@ export default function PortfolioPage() {
               <CardDescription>
                 Visual breakdown of your investments by asset.
               </CardDescription>
-            </CardHeader>
+            </Header>
             <CardContent>
             {hasHoldings ? (
               <div style={{ width: '100%', height: 350 }}>
