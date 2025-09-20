@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Award, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLearningModules } from '@/components/learning-modules-provider';
+import React, { useEffect } from 'react';
 
 export default function ModuleDetailsPage({ children }: { children: React.ReactNode }) {
   const params = useParams();
@@ -16,14 +17,20 @@ export default function ModuleDetailsPage({ children }: { children: React.ReactN
   
   const module = getModuleById(moduleId as string);
 
+  useEffect(() => {
+    // If the base route is hit, redirect to lessons page.
+    if (pathname === `/learn/${moduleId}`) {
+      router.replace(`/learn/${moduleId}/lessons`);
+    }
+  }, [pathname, moduleId, router]);
+  
   if (!module) {
     notFound();
   }
-
-  // If the base route is hit, redirect to lessons page.
+  
+  // While redirecting, show nothing or a loading spinner
   if (pathname === `/learn/${moduleId}`) {
-    router.replace(`/learn/${moduleId}/lessons`);
-    return null; // or a loading spinner
+    return null; 
   }
 
   const isQuizPage = pathname.includes('/quiz');
