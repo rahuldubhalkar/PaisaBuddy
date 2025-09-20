@@ -160,6 +160,25 @@ function TradeDialog({
 
 const COLORS = ['#3F51B5', '#7E57C2', '#4CAF50', '#FFC107', '#F44336', '#2196F3'];
 
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+    <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+    >
+        {`${(percent * 100).toFixed(0)}%`}
+    </text>
+    );
+};
+
 export default function PortfolioPage() {
   const { assets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage } = usePortfolio();
   
@@ -313,7 +332,7 @@ export default function PortfolioPage() {
                         <TableCell>
                            <div className="flex items-center justify-center gap-2">
                             <TradeDialog asset={asset} action="Buy" />
-                            <TradeDialog asset={asset} action="Sell" />
+                            { asset.quantity > 0 && <TradeDialog asset={asset} action="Sell" /> }
                           </div>
                         </TableCell>
                       </TableRow>
@@ -356,23 +375,7 @@ export default function PortfolioPage() {
                       cy="50%"
                       outerRadius={120}
                       labelLine={false}
-                      label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                        const RADIAN = Math.PI / 180;
-                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                        return (
-                          <text
-                            x={x}
-                            y={y}
-                            fill="white"
-                            textAnchor={x > cx ? 'start' : 'end'}
-                            dominantBaseline="central"
-                          >
-                            {`${(percent * 100).toFixed(0)}%`}
-                          </text>
-                        );
-                      }}
+                      label={renderCustomizedLabel}
                     >
                       {chartData.map((entry, index) => (
                         <Cell
