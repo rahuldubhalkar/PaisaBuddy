@@ -3,20 +3,20 @@
     {
       "id": "dashboard-portfolio",
       "description": "A dynamic stock market chart, representing the virtual portfolio feature.",
-      "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=600&h=400&fit=crop",
+      "imageUrl": "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=600&h=400&fit=crop",
       "imageHint": "stock market"
     },
     {
       "id": "dashboard-learn",
-      "description": "A person studying with books.",
-      "imageUrl": "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=600&h=400&fit=crop",
-      "imageHint": "study books"
+      "description": "A person reading a book in a library, representing learning.",
+      "imageUrl": "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=600&h=400&fit=crop",
+      "imageHint": "study library"
     },
     {
       "id": "dashboard-budget",
-      "description": "A person counting Indian rupee notes, representing money and budgeting.",
-      "imageUrl": "https://images.unsplash.com/photo-1596468233509-c852a3a5f4f8?q=80&w=600&h=400&fit=crop",
-      "imageHint": "counting money"
+      "description": "A wallet with Indian rupee notes, representing budgeting.",
+      "imageUrl": "https://images.unsplash.com/photo-1620714223084-86c9df242d04?q=80&w=600&h=400&fit=crop",
+      "imageHint": "wallet money"
     },
     {
       "id": "dashboard-fraud",
