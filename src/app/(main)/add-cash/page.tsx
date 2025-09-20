@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { IndianRupee, CreditCard, Landmark, Smartphone } from 'lucide-react';
+import Image from 'next/image';
+import { IndianRupee, CreditCard, Landmark, Smartphone, CheckCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -16,15 +17,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { usePortfolio } from '@/components/portfolio-provider';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+type PaymentMethod = 'Google Pay' | 'PhonePe' | 'UPI / Bank';
+type PageState = 'enterAmount' | 'makePayment' | 'processing' | 'success';
 
 export default function AddCashPage() {
   const [amount, setAmount] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [utr, setUtr] = useState('');
+  const [state, setState] = useState<PageState>('enterAmount');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+
   const router = useRouter();
   const { toast } = useToast();
   const { addCash } = usePortfolio();
 
-  const handleAddCash = (paymentMethod: string) => {
+  const qrCodePlaceholder = PlaceHolderImages.find(p => p.id === 'qr-code');
+
+  const handlePaymentMethodSelect = (paymentMethod: PaymentMethod) => {
     const numericAmount = parseFloat(amount);
     if (!numericAmount || numericAmount <= 0) {
       toast({
@@ -34,80 +45,160 @@ export default function AddCashPage() {
       });
       return;
     }
+    setSelectedMethod(paymentMethod);
+    setState('makePayment');
+  };
 
-    setIsProcessing(true);
+  const handleSubmitUtr = () => {
+    if (!utr || utr.length < 12) {
+      toast({
+        title: 'Invalid UTR',
+        description: 'Please enter a valid UTR number (usually 12 digits).',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    // Simulate payment processing
+    setState('processing');
+
     setTimeout(() => {
+      const numericAmount = parseFloat(amount);
       addCash(numericAmount);
+      setState('success');
       toast({
         title: 'Payment Successful',
-        description: `₹${numericAmount.toLocaleString('en-IN')} has been added to your virtual cash via ${paymentMethod}.`,
+        description: `₹${numericAmount.toLocaleString('en-IN')} has been added to your virtual cash.`,
       });
-      router.push('/portfolio');
-    }, 1500); // 1.5 second delay
+      setTimeout(() => router.push('/portfolio'), 2000); // Redirect after showing success
+    }, 2000);
+  };
+  
+  const handleGoBack = () => {
+    setState('enterAmount');
+    setUtr('');
+    setSelectedMethod(null);
+  }
+
+  const renderContent = () => {
+    switch(state) {
+      case 'enterAmount':
+        return (
+          <>
+            <CardHeader>
+              <CardTitle>Add Virtual Cash</CardTitle>
+              <CardDescription>
+                Simulate adding funds to your portfolio. Choose an amount and a mock payment method.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount to Add (₹)</Label>
+                <div className="relative">
+                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    id="amount"
+                    type="number"
+                    placeholder="e.g., 10000"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="pl-10 text-lg"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                   <Label>Select Payment Method</Label>
+                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <Button variant="outline" size="lg" className="h-auto py-4" onClick={() => handlePaymentMethodSelect('Google Pay')}>
+                          <div className="flex flex-col items-center gap-2">
+                              <CreditCard className="h-8 w-8" />
+                              <span>Google Pay</span>
+                          </div>
+                      </Button>
+                       <Button variant="outline" size="lg" className="h-auto py-4" onClick={() => handlePaymentMethodSelect('PhonePe')}>
+                          <div className="flex flex-col items-center gap-2">
+                              <Smartphone className="h-8 w-8" />
+                              <span>PhonePe</span>
+                          </div>
+                      </Button>
+                       <Button variant="outline" size="lg" className="h-auto py-4" onClick={() => handlePaymentMethodSelect('UPI / Bank')}>
+                          <div className="flex flex-col items-center gap-2">
+                              <Landmark className="h-8 w-8" />
+                              <span>UPI / Bank</span>
+                          </div>
+                      </Button>
+                   </div>
+              </div>
+            </CardContent>
+          </>
+        );
+
+      case 'makePayment':
+        return (
+          <>
+            <CardHeader>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={handleGoBack} className="h-8 w-8">
+                        <ArrowLeft className="h-5 w-5"/>
+                    </Button>
+                    <div>
+                        <CardTitle>Complete Your Payment</CardTitle>
+                        <CardDescription>Scan the QR or use the UPI ID, then submit the UTR.</CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-4 rounded-lg bg-secondary flex flex-col items-center gap-4">
+                {qrCodePlaceholder && (
+                  <Image src={qrCodePlaceholder.imageUrl} alt="Mock QR Code" width={150} height={150} data-ai-hint={qrCodePlaceholder.imageHint} className="rounded-md" />
+                )}
+                <div className="text-center">
+                  <p className="font-semibold">paisa-buddy-payments@okhdfcbank</p>
+                  <p className="text-sm text-muted-foreground">Click to copy</p>
+                </div>
+                <p className="text-lg font-bold">Amount: ₹{parseFloat(amount).toLocaleString('en-IN')}</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="utr">Enter Transaction UTR</Label>
+                <Input 
+                    id="utr" 
+                    placeholder="12-digit UTR number" 
+                    value={utr} 
+                    onChange={(e) => setUtr(e.target.value)}
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full" onClick={handleSubmitUtr}>Submit UTR</Button>
+            </CardFooter>
+          </>
+        );
+
+      case 'processing':
+        return (
+          <CardContent className="flex flex-col items-center justify-center h-64 gap-4">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+            <p className="text-muted-foreground">Verifying payment, please wait...</p>
+          </CardContent>
+        );
+      
+      case 'success':
+         return (
+          <CardContent className="flex flex-col items-center justify-center h-64 gap-4">
+            <CheckCircle className="h-12 w-12 text-green-500" />
+            <h2 className="text-2xl font-bold">Payment Successful!</h2>
+            <p className="text-muted-foreground">₹{parseFloat(amount).toLocaleString('en-IN')} added. Redirecting...</p>
+          </CardContent>
+        );
+    }
   };
 
   return (
     <div className="flex flex-col gap-6 items-center">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-md">
         <Card>
-          <CardHeader>
-            <CardTitle>Add Virtual Cash</CardTitle>
-            <CardDescription>
-              Simulate adding funds to your portfolio. Choose an amount and a mock payment method.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="amount">Amount to Add (₹)</Label>
-              <div className="relative">
-                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="amount"
-                  type="number"
-                  placeholder="e.g., 10000"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="pl-10 text-lg"
-                  disabled={isProcessing}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-                 <Label>Select Payment Method</Label>
-                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Button variant="outline" size="lg" className="h-auto py-4" disabled={isProcessing} onClick={() => handleAddCash('Google Pay')}>
-                        <div className="flex flex-col items-center gap-2">
-                            <CreditCard className="h-8 w-8" />
-                            <span>Google Pay</span>
-                        </div>
-                    </Button>
-                     <Button variant="outline" size="lg" className="h-auto py-4" disabled={isProcessing} onClick={() => handleAddCash('PhonePe')}>
-                        <div className="flex flex-col items-center gap-2">
-                            <Smartphone className="h-8 w-8" />
-                            <span>PhonePe</span>
-                        </div>
-                    </Button>
-                     <Button variant="outline" size="lg" className="h-auto py-4" disabled={isProcessing} onClick={() => handleAddCash('UPI')}>
-                        <div className="flex flex-col items-center gap-2">
-                            <Landmark className="h-8 w-8" />
-                            <span>UPI / Bank</span>
-                        </div>
-                    </Button>
-                 </div>
-            </div>
-
-          </CardContent>
-          {isProcessing && (
-             <CardFooter>
-                <div className="w-full flex items-center justify-center gap-2 text-muted-foreground">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-                    <span>Processing payment...</span>
-                </div>
-             </CardFooter>
-          )}
+          {renderContent()}
         </Card>
       </div>
     </div>
