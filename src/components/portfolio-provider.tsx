@@ -62,13 +62,14 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
                 : a
             );
             } else {
-                // This case should ideally not happen if assets are added from discover page first
                 return [...prevAssets, { ...tradedAsset, quantity, avgPrice: tradedAsset.currentPrice }];
             }
         } else { // Sell
             setVirtualCash(vc => vc + cost);
-            if (existingAsset && existingAsset.quantity >= quantity) {
+            if (existingAsset && existingAsset.quantity > quantity) {
                 return prevAssets.map(a => a.id === tradedAsset.id ? { ...a, quantity: a.quantity - quantity } : a);
+            } else if (existingAsset && existingAsset.quantity === quantity) {
+                 return prevAssets.filter(a => a.id !== tradedAsset.id);
             } else {
                 // This case should not be hit due to UI validation, but as a fallback:
                 return prevAssets;
