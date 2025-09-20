@@ -1,3 +1,6 @@
+
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -14,8 +17,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  CardContent,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useLearningModules } from '@/components/learning-modules-provider';
+import { Progress } from '@/components/ui/progress';
 
 const features = [
   {
@@ -52,6 +58,40 @@ const features = [
   },
 ];
 
+function LearningProgress() {
+  const { modules } = useLearningModules();
+  const totalModules = modules.length;
+  const completedModules = modules.filter(m => m.progress === 100).length;
+  const overallProgress = totalModules > 0 ? (completedModules / totalModules) * 100 : 0;
+
+  return (
+     <Card className="col-span-1 md:col-span-2">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+             <GraduationCap className="h-6 w-6 text-primary" />
+             <CardTitle>Your Learning Progress</CardTitle>
+          </div>
+          <CardDescription>You have completed {completedModules} of {totalModules} modules.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Progress value={overallProgress} className="h-3" />
+            <div className="mt-2 flex justify-between text-sm text-muted-foreground">
+                <span>Overall Progress</span>
+                <span>{Math.round(overallProgress)}%</span>
+            </div>
+        </CardContent>
+        <CardFooter>
+            <Button asChild variant="outline">
+                <Link href="/learn">
+                    {completedModules === totalModules ? 'Review Modules' : 'Continue Learning'}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
+        </CardFooter>
+     </Card>
+  )
+}
+
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
@@ -63,6 +103,10 @@ export default function DashboardPage() {
           Your journey to financial freedom starts here. Explore our tools and
           resources.
         </p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <LearningProgress />
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
