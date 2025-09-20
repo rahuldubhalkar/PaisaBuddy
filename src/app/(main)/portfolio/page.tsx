@@ -83,7 +83,7 @@ function TradeDialog({
       });
       return;
     }
-    handleTrade(asset, quantity, action);
+    handleTrade(asset.id, quantity, action);
     setOpen(false);
     toast({
       title: `Trade Successful`,
