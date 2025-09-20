@@ -33,7 +33,7 @@ import { Button } from '@/components/ui/button';
 import { PortfolioProvider } from '@/components/portfolio-provider';
 import { BudgetProvider } from '@/components/budget-provider';
 import { LearningModulesProvider } from '@/components/learning-modules-provider';
-import { AuthProvider, useAuth } from '@/components/auth-provider';
+import { useAuth } from '@/components/auth-provider';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +43,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useRouter } from 'next/navigation';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -128,8 +129,12 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
     return <div className="flex h-screen w-screen items-center justify-center">Loading...</div>;
   }
   
-  if (!user) {
+  if (!user && (pathname === '/login' || pathname === '/signup' || pathname === '/forgot-password')) {
     return <>{children}</>;
+  }
+
+  if (!user) {
+      return null;
   }
 
   return (
@@ -202,15 +207,12 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-import { useRouter } from 'next/navigation';
 export default function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
       <MainLayoutContent>{children}</MainLayoutContent>
-    </AuthProvider>
   );
 }
