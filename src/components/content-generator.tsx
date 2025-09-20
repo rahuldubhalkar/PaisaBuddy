@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { Sparkles, Wand2 } from 'lucide-react';
 import { generateContentAction } from '@/app/(main)/generate/actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +30,7 @@ function SubmitButton() {
 
 export function ContentGenerator() {
   const initialState = {};
-  const [state, formAction] = useFormState(generateContentAction, initialState);
+  const [state, formAction] = useActionState(generateContentAction, initialState);
 
   return (
     <div className="space-y-6">
