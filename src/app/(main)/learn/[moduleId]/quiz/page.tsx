@@ -135,12 +135,10 @@ export default function ModuleQuizPage() {
                     Back to Modules
                     </Link>
                 </Button>
-                {finalProgress < 100 && (
-                    <Button onClick={handleRetake}>
-                    <RotateCw className="mr-2 h-4 w-4" />
-                    Retake Quiz
-                    </Button>
-                )}
+                <Button onClick={handleRetake}>
+                  <RotateCw className="mr-2 h-4 w-4" />
+                  Retake Quiz
+                </Button>
                 </div>
             </CardContent>
           </Card>
