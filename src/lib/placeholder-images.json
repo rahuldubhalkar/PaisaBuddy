@@ -3,26 +3,26 @@
     {
       "id": "dashboard-portfolio",
       "description": "A dynamic stock market chart, representing the virtual portfolio feature.",
-      "imageUrl": "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=600&h=400&fit=crop",
+      "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=600&h=400&fit=crop",
       "imageHint": "stock market"
     },
     {
       "id": "dashboard-learn",
-      "description": "A person using a laptop for online learning.",
-      "imageUrl": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=600&h=400&fit=crop",
-      "imageHint": "elearning online"
+      "description": "A person studying with books.",
+      "imageUrl": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=600&h=400&fit=crop",
+      "imageHint": "study books"
     },
     {
       "id": "dashboard-budget",
       "description": "A person writing in a notebook next to a calculator and coffee.",
-      "imageUrl": "https://images.unsplash.com/photo-1586486855517-0f498158c399?q=80&w=600&h=400&fit=crop",
+      "imageUrl": "https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=600&h=400&fit=crop",
       "imageHint": "budget planning"
     },
     {
       "id": "dashboard-fraud",
       "description": "A digital padlock icon on a screen, symbolizing cybersecurity.",
-      "imageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=600&h=400&fit=crop",
-      "imageHint": "cyber security"
+      "imageUrl": "https://images.unsplash.com/photo-1526374965328-5f61d4dc18c5?q=80&w=600&h=400&fit=crop",
+      "imageHint": "security"
     }
   ]
 }
