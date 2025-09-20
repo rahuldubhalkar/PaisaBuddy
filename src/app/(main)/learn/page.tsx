@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -16,51 +17,7 @@ import {
   Gauge,
   HelpCircle,
 } from 'lucide-react';
-
-const modules = [
-  {
-    title: 'Budgeting 101',
-    description: 'Master the art of creating and sticking to a budget. Take control of your money.',
-    icon: PiggyBank,
-    progress: 75,
-    status: 'In Progress',
-  },
-  {
-    title: 'Power of SIPs',
-    description: 'Understand Systematic Investment Plans and how they help in wealth creation.',
-    icon: TrendingUp,
-    progress: 40,
-    status: 'In Progress',
-  },
-  {
-    title: 'UPI & Digital Payments',
-    description: 'Learn the ins and outs of UPI, wallets, and secure online transactions.',
-    icon: Smartphone,
-    progress: 100,
-    status: 'Completed',
-  },
-  {
-    title: 'Decoding Indian Taxes',
-    description: 'A simple guide to understanding income tax, slabs, and deductions for salaried individuals.',
-    icon: Landmark,
-    progress: 0,
-    status: 'Start Learning',
-  },
-  {
-    title: 'Credit Score Explained',
-    description: 'Why your CIBIL score matters and how to build a strong credit history.',
-    icon: Gauge,
-    progress: 0,
-    status: 'Start Learning',
-  },
-  {
-    title: 'Intro to Mutual Funds',
-    description: 'Demystify mutual funds, their types, and how to choose the right one for you.',
-    icon: HelpCircle,
-    progress: 20,
-    status: 'In Progress',
-  },
-];
+import { modules } from '@/lib/learning-modules-data';
 
 export default function LearnPage() {
   return (
@@ -74,12 +31,22 @@ export default function LearnPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {modules.map((module) => (
-          <Card key={module.title} className="flex flex-col">
+        {modules.map((module) => {
+          const Icon = {
+            PiggyBank,
+            TrendingUp,
+            Smartphone,
+            Landmark,
+            Gauge,
+            HelpCircle,
+          }[module.icon];
+
+          return (
+          <Card key={module.id} className="flex flex-col">
             <CardHeader>
               <div className="flex items-center gap-4">
                 <div className="bg-primary/10 p-3 rounded-full">
-                  <module.icon className="h-6 w-6 text-primary" />
+                  {Icon && <Icon className="h-6 w-6 text-primary" />}
                 </div>
                 <CardTitle>{module.title}</CardTitle>
               </div>
@@ -95,16 +62,18 @@ export default function LearnPage() {
               <Progress value={module.progress} className="mt-2" />
             </CardContent>
             <CardFooter>
-              <Button className="w-full">
-                {module.progress === 100
-                  ? 'Review'
-                  : module.progress > 0
-                  ? 'Continue Learning'
-                  : 'Start Learning'}
+              <Button asChild className="w-full">
+                <Link href={`/learn/${module.id}`}>
+                  {module.progress === 100
+                    ? 'Review'
+                    : module.progress > 0
+                    ? 'Continue Learning'
+                    : 'Start Learning'}
+                </Link>
               </Button>
             </CardFooter>
           </Card>
-        ))}
+        )})}
       </div>
     </div>
   );

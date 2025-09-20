@@ -26,6 +26,11 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 interface Transaction {
   id: string;
@@ -54,6 +59,108 @@ const initialGoals: Goal[] = [
   { id: '2', name: 'New Phone', targetAmount: 80000, savedAmount: 35000 },
 ];
 
+function AddTransactionDialog({ onAddTransaction }: { onAddTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void }) {
+    const [type, setType] = useState<'Income' | 'Expense'>('Expense');
+    const [category, setCategory] = useState('');
+    const [amount, setAmount] = useState('');
+
+    const handleSubmit = () => {
+        if (category && amount) {
+            onAddTransaction({ type, category, amount: parseFloat(amount) });
+            setCategory('');
+            setAmount('');
+        }
+    }
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Transaction</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Add a New Transaction</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="type" className="text-right">Type</Label>
+                        <Select onValueChange={(value: 'Income' | 'Expense') => setType(value)} defaultValue={type}>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Income">Income</SelectItem>
+                                <SelectItem value="Expense">Expense</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="category" className="text-right">Category</Label>
+                        <Input id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="col-span-3" placeholder="e.g., Food, Salary" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="amount" className="text-right">Amount</Label>
+                        <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="col-span-3" placeholder="₹" />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button" variant="secondary">Cancel</Button>
+                    </DialogClose>
+                     <DialogClose asChild>
+                        <Button type="submit" onClick={handleSubmit}>Add Transaction</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+function AddGoalDialog({ onAddGoal }: { onAddGoal: (goal: Omit<Goal, 'id' | 'savedAmount'>) => void }) {
+    const [name, setName] = useState('');
+    const [targetAmount, setTargetAmount] = useState('');
+
+    const handleSubmit = () => {
+        if (name && targetAmount) {
+            onAddGoal({ name, targetAmount: parseFloat(targetAmount) });
+            setName('');
+            setTargetAmount('');
+        }
+    }
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button><Target className="mr-2 h-4 w-4" /> Add New Goal</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Add a New Financial Goal</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="goal-name" className="text-right">Goal Name</Label>
+                        <Input id="goal-name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" placeholder="e.g., Buy a laptop" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="target-amount" className="text-right">Target Amount</Label>
+                        <Input id="target-amount" type="number" value={targetAmount} onChange={(e) => setTargetAmount(e.target.value)} className="col-span-3" placeholder="₹" />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                         <Button type="button" variant="secondary">Cancel</Button>
+                    </DialogClose>
+                    <DialogClose asChild>
+                        <Button type="submit" onClick={handleSubmit}>Add Goal</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+
 export default function BudgetPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
@@ -61,6 +168,24 @@ export default function BudgetPage() {
   const totalIncome = transactions.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
   const totalExpense = transactions.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0);
   const balance = totalIncome - totalExpense;
+
+  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
+    const newTransaction: Transaction = {
+        ...transaction,
+        id: (transactions.length + 1).toString(),
+        date: new Date().toISOString().split('T')[0],
+    };
+    setTransactions(prev => [...prev, newTransaction]);
+  };
+
+  const handleAddGoal = (goal: Omit<Goal, 'id' | 'savedAmount'>) => {
+    const newGoal: Goal = {
+        ...goal,
+        id: (goals.length + 1).toString(),
+        savedAmount: 0,
+    };
+    setGoals(prev => [...prev, newGoal]);
+  };
 
 
   return (
@@ -92,7 +217,7 @@ export default function BudgetPage() {
                 <CardTitle>Recent Transactions</CardTitle>
                 <CardDescription>A log of your income and expenses.</CardDescription>
               </div>
-              <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Transaction</Button>
+              <AddTransactionDialog onAddTransaction={handleAddTransaction} />
             </CardHeader>
             <CardContent>
               <Table>
@@ -129,7 +254,7 @@ export default function BudgetPage() {
                         <CardTitle>Your Financial Goals</CardTitle>
                         <CardDescription>Track your progress towards your savings goals.</CardDescription>
                     </div>
-                    <Button><Target className="mr-2 h-4 w-4" /> Add New Goal</Button>
+                     <AddGoalDialog onAddGoal={handleAddGoal} />
                 </CardHeader>
                 <CardContent className="grid gap-6 md:grid-cols-2">
                     {goals.map(goal => {
