@@ -35,7 +35,7 @@ interface PortfolioContextType {
     handleTrade: (assetId: string, quantity: number, action: 'Buy' | 'Sell') => boolean;
     addAsset: (asset: Asset) => void;
     hasAsset: (assetId: string) => boolean;
-    resetVirtualCash: () => void;
+    addVirtualCash: () => void;
 }
 
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
@@ -142,8 +142,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         return allPortfolioAssets.some(asset => asset.id === assetId);
     }
     
-    const resetVirtualCash = () => {
-        setVirtualCash(INITIAL_VIRTUAL_CASH);
+    const addVirtualCash = () => {
+        setVirtualCash(vc => vc + 100000);
     }
 
     const value = {
@@ -157,7 +157,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         handleTrade,
         addAsset,
         hasAsset,
-        resetVirtualCash,
+        addVirtualCash,
     };
 
     if (loading) {

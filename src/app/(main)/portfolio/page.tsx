@@ -171,7 +171,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 export default function PortfolioPage() {
-  const { allPortfolioAssets, heldAssets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage, resetVirtualCash } = usePortfolio();
+  const { allPortfolioAssets, heldAssets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage, addVirtualCash } = usePortfolio();
   const { toast } = useToast();
   
   const chartData = heldAssets.map((asset) => ({
@@ -181,11 +181,11 @@ export default function PortfolioPage() {
     
   const hasHoldings = heldAssets.length > 0;
   
-  const handleResetCash = () => {
-    resetVirtualCash();
+  const handleAddCash = () => {
+    addVirtualCash();
     toast({
-        title: 'Virtual Cash Reset',
-        description: 'Your virtual cash has been reset to ₹1,00,000.',
+        title: 'Virtual Cash Added',
+        description: '₹1,00,000 has been added to your virtual cash.',
     });
   }
 
@@ -217,9 +217,9 @@ export default function PortfolioPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button variant="ghost" size="sm" className="text-xs" onClick={handleResetCash}>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={handleAddCash}>
               <WalletCards className="mr-2 h-4 w-4" />
-              Reset Cash
+              Add Cash
             </Button>
           </CardFooter>
         </Card>
