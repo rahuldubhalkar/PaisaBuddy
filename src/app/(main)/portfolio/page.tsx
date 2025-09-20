@@ -179,16 +179,14 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 export default function PortfolioPage() {
-  const { assets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage } = usePortfolio();
+  const { allPortfolioAssets, heldAssets, virtualCash, totalPortfolioValue, totalInvestment, totalGainLoss, totalGainLossPercentage } = usePortfolio();
   
-  const chartData = assets
-    .filter(asset => asset.quantity > 0)
-    .map((asset) => ({
+  const chartData = heldAssets.map((asset) => ({
       name: asset.ticker,
       value: asset.quantity * asset.currentPrice,
-    }));
+  }));
     
-  const hasHoldings = assets.some(a => a.quantity > 0);
+  const hasHoldings = heldAssets.length > 0;
 
   return (
     <div className="flex flex-col gap-8">
@@ -271,7 +269,7 @@ export default function PortfolioPage() {
               <CardTitle>Your Assets</CardTitle>
             </CardHeader>
             <CardContent>
-             {assets.length > 0 ? (
+             {allPortfolioAssets.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -287,7 +285,7 @@ export default function PortfolioPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {assets.map((asset) => {
+                  {allPortfolioAssets.map((asset) => {
                     const totalValue = asset.quantity * asset.currentPrice;
                     const gainLoss =
                       asset.quantity > 0 ? (asset.currentPrice - asset.avgPrice) * asset.quantity : 0;

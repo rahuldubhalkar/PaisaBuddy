@@ -24,7 +24,8 @@ const initialAssets: Asset[] = [
 
 
 interface PortfolioContextType {
-    assets: Asset[];
+    allPortfolioAssets: Asset[];
+    heldAssets: Asset[];
     virtualCash: number;
     totalPortfolioValue: number;
     totalInvestment: number;
@@ -38,16 +39,18 @@ interface PortfolioContextType {
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
-    const [assets, setAssets] = useState<Asset[]>(initialAssets);
+    const [allPortfolioAssets, setAllPortfolioAssets] = useState<Asset[]>(initialAssets);
     const [virtualCash, setVirtualCash] = useState<number>(100000);
 
-    const totalPortfolioValue = assets.reduce((acc, asset) => acc + asset.quantity * asset.currentPrice, 0);
-    const totalInvestment = assets.reduce((acc, asset) => acc + asset.quantity * asset.avgPrice, 0);
+    const heldAssets = allPortfolioAssets.filter(asset => asset.quantity > 0);
+
+    const totalPortfolioValue = heldAssets.reduce((acc, asset) => acc + asset.quantity * asset.currentPrice, 0);
+    const totalInvestment = heldAssets.reduce((acc, asset) => acc + asset.quantity * asset.avgPrice, 0);
     const totalGainLoss = totalPortfolioValue - totalInvestment;
     const totalGainLossPercentage = totalInvestment > 0 ? (totalGainLoss / totalInvestment) * 100 : 0;
 
     const handleTrade = (assetId: string, quantity: number, action: 'Buy' | 'Sell') => {
-        setAssets(prevAssets => {
+        setAllPortfolioAssets(prevAssets => {
             const tradedAsset = prevAssets.find(a => a.id === assetId);
             if (!tradedAsset) return prevAssets;
 
@@ -55,38 +58,30 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
 
             if (action === 'Buy') {
                 setVirtualCash(vc => vc - cost);
-                const existingAsset = prevAssets.find(a => a.id === tradedAsset.id);
-                if (existingAsset) {
-                    return prevAssets.map(a => 
-                        a.id === tradedAsset.id 
-                        ? { ...a, 
-                            avgPrice: ((a.avgPrice * a.quantity) + cost) / (a.quantity + quantity),
-                            quantity: a.quantity + quantity }
-                        : a
-                    );
-                } else {
-                    return [...prevAssets, { ...tradedAsset, quantity, avgPrice: tradedAsset.currentPrice }];
-                }
+                return prevAssets.map(a => 
+                    a.id === tradedAsset.id 
+                    ? { ...a, 
+                        avgPrice: ((a.avgPrice * a.quantity) + cost) / (a.quantity + quantity),
+                        quantity: a.quantity + quantity }
+                    : a
+                );
             } else { // Sell
                 setVirtualCash(vc => vc + cost);
                 const existingAsset = prevAssets.find(a => a.id === tradedAsset.id);
                 if (!existingAsset) return prevAssets;
 
                 const newQuantity = existingAsset.quantity - quantity;
-                if (newQuantity > 0) {
-                     return prevAssets.map(a => a.id === tradedAsset.id ? { ...a, quantity: newQuantity } : a);
-                } else {
-                     // Filter out the asset if quantity is 0 or less
-                     const newAssets = prevAssets.filter(a => a.id !== tradedAsset.id);
-                     // Add a new version of the asset with 0 quantity to keep it in discoverable list
-                     return [...newAssets, {...tradedAsset, quantity: 0, avgPrice: 0}];
-                }
+                return prevAssets.map(a => 
+                    a.id === tradedAsset.id 
+                    ? { ...a, quantity: newQuantity, avgPrice: newQuantity > 0 ? a.avgPrice : 0 } 
+                    : a
+                );
             }
         });
     };
     
     const addAsset = (assetToAdd: Asset) => {
-        setAssets(prevAssets => {
+        setAllPortfolioAssets(prevAssets => {
             const assetExists = prevAssets.some(asset => asset.id === assetToAdd.id);
             if (!assetExists) {
                 return [...prevAssets, assetToAdd];
@@ -96,11 +91,12 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     }
 
     const hasAsset = (assetId: string) => {
-        return assets.some(asset => asset.id === assetId);
+        return allPortfolioAssets.some(asset => asset.id === assetId);
     }
 
     const value = {
-        assets: assets.filter(asset => asset.quantity > 0),
+        allPortfolioAssets,
+        heldAssets,
         virtualCash,
         totalPortfolioValue,
         totalInvestment,
