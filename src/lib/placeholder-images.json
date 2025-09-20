@@ -9,14 +9,14 @@
     {
       "id": "dashboard-learn",
       "description": "A person studying with books.",
-      "imageUrl": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=600&h=400&fit=crop",
+      "imageUrl": "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=600&h=400&fit=crop",
       "imageHint": "study books"
     },
     {
       "id": "dashboard-budget",
-      "description": "A person writing in a notebook next to a calculator and coffee.",
-      "imageUrl": "https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=600&h=400&fit=crop",
-      "imageHint": "budget planning"
+      "description": "Indian rupee notes and coins, representing money and budgeting.",
+      "imageUrl": "https://images.unsplash.com/photo-1627988358498-9a7a61595c56?q=80&w=600&h=400&fit=crop",
+      "imageHint": "money budget"
     },
     {
       "id": "dashboard-fraud",
