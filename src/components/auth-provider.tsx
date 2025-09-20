@@ -14,6 +14,8 @@ import {
     sendSignInLinkToEmail,
     isSignInWithEmailLink,
     signInWithEmailLink as firebaseSignInWithEmailLink,
+    sendEmailVerification,
+    applyActionCode,
 } from 'firebase/auth';
 import { firebaseApp } from '@/lib/firebase';
 import { getFirestore, doc, setDoc, getDoc, Firestore } from 'firebase/firestore';
@@ -27,6 +29,8 @@ interface AuthContextType {
   sendPasswordReset: (email: string) => Promise<void>;
   signInWithEmailLink: (email: string) => Promise<void>;
   handleSignInWithEmailLink: (url: string) => Promise<any>;
+  sendVerificationEmail: (user: User) => Promise<void>;
+  verifyEmailAction: (actionCode: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -65,6 +69,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(userCredential.user, { displayName: name });
     
+    // Send verification email
+    await sendEmailVerification(userCredential.user, {
+      url: process.env.NEXT_PUBLIC_BASE_URL + '/login', // Redirect here after verification
+    });
+
     await setDoc(doc(db, "users", userCredential.user.uid), {
         uid: userCredential.user.uid,
         displayName: name,
@@ -77,6 +86,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     return userCredential;
   };
+
+  const sendVerificationEmail = (user: User) => {
+    return sendEmailVerification(user, {
+        url: process.env.NEXT_PUBLIC_BASE_URL + '/login',
+    });
+  }
+
+  const verifyEmailAction = (actionCode: string) => {
+    return applyActionCode(auth, actionCode);
+  }
 
   const signOut = () => {
     return firebaseSignOut(auth);
@@ -130,7 +149,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut, 
     sendPasswordReset, 
     signInWithEmailLink, 
-    handleSignInWithEmailLink 
+    handleSignInWithEmailLink,
+    sendVerificationEmail,
+    verifyEmailAction
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

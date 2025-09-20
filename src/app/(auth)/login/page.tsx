@@ -19,7 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { XCircle, CheckCircle, Mail } from 'lucide-react';
+import { XCircle, CheckCircle, Mail, Send } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 const formSchema = z.object({
@@ -29,10 +29,12 @@ const formSchema = z.object({
 
 export default function LoginPage() {
   const router = useRouter();
-  const { signIn, signInWithEmailLink } = useAuth();
+  const { signIn, signInWithEmailLink, user, sendVerificationEmail } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
+  const [showResend, setShowResend] = useState(false);
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,13 +47,21 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setError(null);
     setSuccess(null);
+    setShowResend(false);
     try {
       if (loginMethod === 'password') {
         if (!values.password) {
           setError('Password is required.');
           return;
         }
-        await signIn(values.email, values.password);
+        const userCredential = await signIn(values.email, values.password);
+
+        if (!userCredential.user.emailVerified) {
+            setError('Please verify your email address before signing in.');
+            setShowResend(true);
+            return;
+        }
+        
         router.push('/');
       } else {
         await signInWithEmailLink(values.email);
@@ -60,6 +70,21 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       handleAuthError(err);
+    }
+  }
+
+  const handleResendVerification = async () => {
+    if (user) {
+        setResendStatus('sending');
+        try {
+            await sendVerificationEmail(user);
+            setResendStatus('sent');
+            setSuccess('A new verification email has been sent.');
+            setError(null);
+        } catch (error) {
+            setResendStatus('idle');
+            setError('Failed to resend verification email. Please try again.');
+        }
     }
   }
 
@@ -96,7 +121,19 @@ export default function LoginPage() {
                 <Alert variant="destructive">
                   <XCircle className="h-4 w-4" />
                   <AlertTitle>Login Failed</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>
+                    {error}
+                    {showResend && (
+                        <Button 
+                            variant="link" 
+                            className="p-0 h-auto mt-2 text-destructive-foreground"
+                            onClick={handleResendVerification}
+                            disabled={resendStatus === 'sending'}
+                        >
+                           {resendStatus === 'sending' ? 'Sending...' : 'Resend verification email'}
+                        </Button>
+                    )}
+                  </AlertDescription>
                 </Alert>
               )}
                {success && (
@@ -166,7 +203,7 @@ export default function LoginPage() {
             variant="outline" 
             className="w-full" 
             onClick={() => setLoginMethod(prev => prev === 'password' ? 'otp' : 'password')}>
-            <Mail className="mr-2 h-4 w-4" />
+            {loginMethod === 'password' ? <Mail className="mr-2 h-4 w-4" /> : <Send className="mr-2 h-4 w-4" />}
             {loginMethod === 'password' ? 'Sign in with Email Link' : 'Sign in with Password'}
           </Button>
           
