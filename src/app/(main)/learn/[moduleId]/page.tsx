@@ -1,6 +1,6 @@
 'use client';
 
-import { notFound, useParams, usePathname } from 'next/navigation';
+import { notFound, useParams, usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { modules } from '@/lib/learning-modules-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 export default function ModuleDetailsPage({ children }: { children: React.ReactNode }) {
   const params = useParams();
   const pathname = usePathname();
+  const router = useRouter();
   const { moduleId } = params;
   
   const module = modules.find((m) => m.id === moduleId);
@@ -18,7 +19,14 @@ export default function ModuleDetailsPage({ children }: { children: React.ReactN
     notFound();
   }
 
+  // If the base route is hit, redirect to lessons page.
+  if (pathname === `/learn/${moduleId}`) {
+    router.replace(`/learn/${moduleId}/lessons`);
+    return null; // or a loading spinner
+  }
+
   const isQuizPage = pathname.includes('/quiz');
+  const isLessonsPage = pathname.includes('/lessons');
 
   return (
     <div className="flex flex-col gap-6">
@@ -39,8 +47,8 @@ export default function ModuleDetailsPage({ children }: { children: React.ReactN
             </CardHeader>
             <CardContent>
               <nav className="flex flex-col gap-2">
-                 <Button variant={!isQuizPage ? 'secondary' : 'ghost'} asChild className="justify-start">
-                  <Link href={`/learn/${moduleId}`}>
+                 <Button variant={isLessonsPage ? 'secondary' : 'ghost'} asChild className="justify-start">
+                  <Link href={`/learn/${moduleId}/lessons`}>
                     <BookOpen className="mr-2 h-4 w-4" />
                     Lessons
                   </Link>

@@ -10,6 +10,8 @@ import {
   ShieldAlert,
   Sparkles,
   Wallet,
+  Trophy,
+  Search
 } from 'lucide-react';
 
 import {
@@ -29,6 +31,8 @@ import { Button } from '@/components/ui/button';
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/portfolio', label: 'Virtual Portfolio', icon: CandlestickChart },
+  { href: '/discover', label: 'Discover Assets', icon: Search },
+  { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/learn', label: 'Learning Modules', icon: GraduationCap },
   { href: '/budget', label: 'Budgeting Tools', icon: Wallet },
   { href: '/fraud-detection', label: 'Fraud Detection', icon: ShieldAlert },

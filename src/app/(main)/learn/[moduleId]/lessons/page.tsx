@@ -36,8 +36,10 @@ export default function ModuleLessonsPage() {
           {module.lessons.map((lesson) => (
             <AccordionItem value={lesson.id} key={lesson.id}>
               <AccordionTrigger className="text-base">{lesson.title}</AccordionTrigger>
-              <AccordionContent className="prose prose-sm max-w-none">
-                <p>{lesson.content}</p>
+              <AccordionContent className="prose prose-sm max-w-none text-card-foreground/80 space-y-4">
+                {lesson.content.split('\\n').map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))}
               </AccordionContent>
             </AccordionItem>
           ))}
