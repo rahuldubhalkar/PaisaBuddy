@@ -87,12 +87,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDocRef = doc(db, "users", result.user.uid);
       const userDoc = await getDoc(userDocRef);
   
+      // Create a new user document in Firestore only if it doesn't already exist
       if (!userDoc.exists()) {
-          // Create a new user document in Firestore if it doesn't exist
           await setDoc(userDocRef, {
               uid: result.user.uid,
               displayName: result.user.displayName,
               email: result.user.email,
+              photoURL: result.user.photoURL,
               createdAt: new Date(),
               learningProgress: {},
               portfolio: {},
@@ -101,13 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return result;
     } catch (error: any) {
+      // Gracefully handle cases where the user closes the popup
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        // This is a common case where the user closes the popup.
-        // We can just log it and let the user try again.
         console.warn('Google Sign-In popup was closed by the user.');
-        return; // Return gracefully.
+        return; // Return without throwing an error to prevent app crash
       }
-      // For other errors, we should re-throw them so they can be handled by the UI.
+      // For other errors, log them and re-throw so the UI can handle them
       console.error("Google Sign-In Error:", error);
       throw error;
     }
