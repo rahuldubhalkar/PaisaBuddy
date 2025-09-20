@@ -30,14 +30,10 @@ export default function ModuleQuizPage() {
       const correctAnswers: Record<string, string> = {};
       let correctCount = 0;
       module.quiz.questions.forEach(q => {
-        if (selectedAnswers[q.id] === q.answer) {
-             correctAnswers[q.id] = q.answer;
-             correctCount++;
-        } else {
-             // To show results for already completed quizzes, we need to populate this
-             const storedAnswer = localStorage.getItem(`quiz-${moduleId}-q-${q.id}`);
-             correctAnswers[q.id] = storedAnswer || '';
-             if (storedAnswer === q.answer) correctCount++;
+        const storedAnswer = localStorage.getItem(`quiz-${moduleId}-q-${q.id}`);
+        if (storedAnswer) {
+            correctAnswers[q.id] = storedAnswer;
+            if (storedAnswer === q.answer) correctCount++;
         }
       });
       setSelectedAnswers(correctAnswers);
@@ -64,7 +60,9 @@ export default function ModuleQuizPage() {
     if (submitted) return;
     const calculatedScore = module.quiz.questions.reduce((correct, q) => {
       // Save answer to local storage for review later
-      localStorage.setItem(`quiz-${moduleId}-q-${q.id}`, selectedAnswers[q.id]);
+      if(selectedAnswers[q.id]) {
+        localStorage.setItem(`quiz-${moduleId}-q-${q.id}`, selectedAnswers[q.id]);
+      }
       return selectedAnswers[q.id] === q.answer ? correct + 1 : correct;
     }, 0);
     
@@ -86,8 +84,8 @@ export default function ModuleQuizPage() {
   };
   
   const isQuizCompleted = submitted || module.progress === 100;
-  const finalScore = isQuizCompleted ? score : 0;
   const totalQuestions = module.quiz.questions.length;
+  const finalScore = isQuizCompleted ? score : 0;
   const finalProgress = isQuizCompleted ? Math.round((finalScore / totalQuestions) * 100) : 0;
 
   const currentQuestion = module.quiz.questions[currentQuestionIndex];
@@ -130,7 +128,7 @@ export default function ModuleQuizPage() {
                     Back to Modules
                     </Link>
                 </Button>
-                {finalProgress !== 100 && (
+                {finalProgress < 100 && (
                     <Button onClick={handleRetake}>
                     <RotateCw className="mr-2 h-4 w-4" />
                     Retake Quiz
@@ -142,28 +140,33 @@ export default function ModuleQuizPage() {
 
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Review Your Answers:</h3>
-            {module.quiz.questions.map(q => (
-              <div key={q.id}>
-                <p className="font-semibold mb-2">{q.text}</p>
-                {selectedAnswers[q.id] === q.answer ? (
-                  <Alert variant="default" className="border-green-500 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400 dark:border-green-500/50">
-                    <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400" />
-                    <AlertTitle>Correct!</AlertTitle>
-                    <AlertDescription>Your answer: <strong>{selectedAnswers[q.id]}</strong></AlertDescription>
-                  </Alert>
-                ) : (
-                  <Alert variant="destructive">
-                    <XCircle className="h-5 w-5" />
-                    <AlertTitle>Incorrect</AlertTitle>
-                    <AlertDescription>
-                      Your answer: <strong>{selectedAnswers[q.id] || 'Not answered'}</strong>.
-                      <br />
-                      Correct answer is: <strong>{q.answer}</strong>
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            ))}
+            {module.quiz.questions.map(q => {
+                const userAnswer = selectedAnswers[q.id];
+                const isCorrect = userAnswer === q.answer;
+                
+                return (
+                    <Card key={q.id} className="p-4">
+                        <p className="font-semibold mb-2">{q.text}</p>
+                        {isCorrect ? (
+                        <Alert variant="default" className="border-green-500 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400 dark:border-green-500/50">
+                            <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400" />
+                            <AlertTitle>Correct!</AlertTitle>
+                            <AlertDescription>Your answer: <strong>{userAnswer}</strong></AlertDescription>
+                        </Alert>
+                        ) : (
+                        <Alert variant="destructive">
+                            <XCircle className="h-5 w-5" />
+                            <AlertTitle>Incorrect</AlertTitle>
+                            <AlertDescription>
+                            Your answer: <strong>{userAnswer || 'Not answered'}</strong>.
+                            <br />
+                            Correct answer is: <strong>{q.answer}</strong>
+                            </AlertDescription>
+                        </Alert>
+                        )}
+                    </Card>
+                )
+            })}
           </div>
         </CardContent>
       </Card>
@@ -206,7 +209,7 @@ export default function ModuleQuizPage() {
           </Button>
 
           {isLastQuestion ? (
-            <Button onClick={handleSubmit} disabled={Object.keys(selectedAnswers).length !== totalQuestions}>
+            <Button onClick={handleSubmit} disabled={Object.keys(selectedAnswers).length < totalQuestions}>
               Submit Answers <CheckCircle className="ml-2 h-4 w-4" />
             </Button>
           ) : (
