@@ -10,15 +10,13 @@ import {
     signOut as firebaseSignOut,
     sendPasswordResetEmail,
     updateProfile,
-    Auth,
-    sendSignInLinkToEmail,
     isSignInWithEmailLink,
     signInWithEmailLink as firebaseSignInWithEmailLink,
     sendEmailVerification,
     applyActionCode,
 } from 'firebase/auth';
 import { firebaseApp } from '@/lib/firebase';
-import { getFirestore, doc, setDoc, getDoc, Firestore } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
@@ -27,8 +25,6 @@ interface AuthContextType {
   signUp: (name: string, email: string, pass: string) => Promise<any>;
   signOut: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
-  signInWithEmailLink: (email: string) => Promise<void>;
-  handleSignInWithEmailLink: (url: string) => Promise<any>;
   sendVerificationEmail: (user: User) => Promise<void>;
   verifyEmailAction: (actionCode: string) => Promise<void>;
 }
@@ -37,12 +33,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
-
-const actionCodeSettings = {
-  url: process.env.NEXT_PUBLIC_BASE_URL + '/finish-login',
-  handleCodeInApp: true,
-};
-
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -69,9 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(userCredential.user, { displayName: name });
     
+    const verificationUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/verify-email` : 'http://localhost:9002/verify-email';
     // Send verification email
     await sendEmailVerification(userCredential.user, {
-      url: process.env.NEXT_PUBLIC_BASE_URL + '/login', // Redirect here after verification
+      url: verificationUrl, 
     });
 
     await setDoc(doc(db, "users", userCredential.user.uid), {
@@ -88,8 +79,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const sendVerificationEmail = (user: User) => {
+    const verificationUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/verify-email` : 'http://localhost:9002/verify-email';
     return sendEmailVerification(user, {
-        url: process.env.NEXT_PUBLIC_BASE_URL + '/login',
+        url: verificationUrl,
     });
   }
 
@@ -102,43 +94,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const sendPasswordReset = (email: string) => {
-    return sendPasswordResetEmail(auth, email);
-  };
-
-  const signInWithEmailLink = async (email: string) => {
-    window.localStorage.setItem('emailForSignIn', email);
-    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-  };
-
-  const handleSignInWithEmailLink = async (url: string) => {
-    if (isSignInWithEmailLink(auth, url)) {
-      let email = window.localStorage.getItem('emailForSignIn');
-      if (!email) {
-        email = window.prompt('Please provide your email for confirmation');
-        if (!email) {
-          throw new Error('Email is required to complete sign-in.');
-        }
-      }
-      const result = await firebaseSignInWithEmailLink(auth, email, url);
-      window.localStorage.removeItem('emailForSignIn');
-
-      const userDocRef = doc(db, "users", result.user.uid);
-      const userDoc = await getDoc(userDocRef);
-  
-      if (!userDoc.exists()) {
-          await setDoc(userDocRef, {
-              uid: result.user.uid,
-              displayName: result.user.displayName || email.split('@')[0],
-              email: result.user.email,
-              photoURL: result.user.photoURL,
-              createdAt: new Date(),
-              learningProgress: {},
-              portfolio: {},
-              budget: {},
-          });
-      }
-      return result;
-    }
+    const resetUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/login` : 'http://localhost:9002/login';
+    return sendPasswordResetEmail(auth, email, {
+        url: resetUrl,
+    });
   };
 
   const value = { 
@@ -148,8 +107,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp, 
     signOut, 
     sendPasswordReset, 
-    signInWithEmailLink, 
-    handleSignInWithEmailLink,
     sendVerificationEmail,
     verifyEmailAction
   };

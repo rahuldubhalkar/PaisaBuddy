@@ -19,20 +19,19 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { XCircle, CheckCircle, Mail, Send } from 'lucide-react';
+import { XCircle, CheckCircle } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
-  password: z.string().min(1, { message: 'Password is required.' }).optional(),
+  password: z.string().min(1, { message: 'Password is required.' }),
 });
 
 export default function LoginPage() {
   const router = useRouter();
-  const { signIn, signInWithEmailLink, user, sendVerificationEmail } = useAuth();
+  const { signIn, sendVerificationEmail, user: authUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
   const [showResend, setShowResend] = useState(false);
   const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
 
@@ -49,41 +48,42 @@ export default function LoginPage() {
     setSuccess(null);
     setShowResend(false);
     try {
-      if (loginMethod === 'password') {
-        if (!values.password) {
-          setError('Password is required.');
-          return;
-        }
-        const userCredential = await signIn(values.email, values.password);
+      const userCredential = await signIn(values.email, values.password);
 
-        if (!userCredential.user.emailVerified) {
-            setError('Please verify your email address before signing in.');
-            setShowResend(true);
-            return;
-        }
-        
-        router.push('/');
-      } else {
-        await signInWithEmailLink(values.email);
-        setSuccess(`A sign-in link has been sent to ${values.email}. Please check your inbox.`);
-        form.reset();
+      if (!userCredential.user.emailVerified) {
+          setError('Please verify your email address before signing in.');
+          setShowResend(true);
+          return;
       }
+      
+      router.push('/');
     } catch (err: any) {
       handleAuthError(err);
     }
   }
 
   const handleResendVerification = async () => {
-    if (user) {
+    // This uses the user object from the time of the failed login attempt.
+    const userToVerify = authUser;
+     if (userToVerify) {
         setResendStatus('sending');
         try {
-            await sendVerificationEmail(user);
+            await sendVerificationEmail(userToVerify);
             setResendStatus('sent');
             setSuccess('A new verification email has been sent.');
             setError(null);
         } catch (error) {
             setResendStatus('idle');
             setError('Failed to resend verification email. Please try again.');
+        }
+    } else {
+        // Fallback for when the user might not be set in the context yet.
+        // This is less likely with the check in onSubmit but serves as a safeguard.
+        const email = form.getValues('email');
+        if(email) {
+            setError(`Could not resend email. Please try signing in again to trigger the verification prompt for ${email}.`);
+        } else {
+             setError('Please enter your email and try signing in again to resend the verification link.');
         }
     }
   }
@@ -111,7 +111,7 @@ export default function LoginPage() {
           </div>
           <CardTitle>Welcome Back!</CardTitle>
           <CardDescription>
-            {loginMethod === 'password' ? 'Sign in to continue your financial journey.' : 'Enter your email to receive a secure sign-in link.'}
+            Sign in to continue your financial journey.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -139,7 +139,7 @@ export default function LoginPage() {
                {success && (
                 <Alert variant="default" className="border-green-500 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400 dark:border-green-500/50">
                   <CheckCircle className="h-4 w-4 text-green-500" />
-                  <AlertTitle>Check your Email</AlertTitle>
+                  <AlertTitle>Success</AlertTitle>
                   <AlertDescription>{success}</AlertDescription>
                 </Alert>
               )}
@@ -156,59 +156,31 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              {loginMethod === 'password' && (
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-              {loginMethod === 'password' && (
-                <div className="text-right text-sm">
-                  <Link href="/forgot-password" passHref>
-                    <Button variant="link" className="px-0 h-auto">Forgot Password?</Button>
-                  </Link>
-                </div>
-              )}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="text-right text-sm">
+                <Link href="/forgot-password" passHref>
+                  <Button variant="link" className="px-0 h-auto">Forgot Password?</Button>
+                </Link>
+              </div>
               <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting 
-                  ? 'Sending...' 
-                  : loginMethod === 'password' 
-                  ? 'Sign In' 
-                  : 'Send Sign-in Link'}
+                {form.formState.isSubmitting ? 'Signing In...' : 'Sign In'}
               </Button>
             </form>
           </Form>
 
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or
-              </span>
-            </div>
-          </div>
-        
-          <Button 
-            variant="outline" 
-            className="w-full" 
-            onClick={() => setLoginMethod(prev => prev === 'password' ? 'otp' : 'password')}>
-            {loginMethod === 'password' ? <Mail className="mr-2 h-4 w-4" /> : <Send className="mr-2 h-4 w-4" />}
-            {loginMethod === 'password' ? 'Sign in with Email Link' : 'Sign in with Password'}
-          </Button>
-          
-
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Don't have an account?{' '}
             <Link href="/signup" passHref>
                 <Button variant="link" className="px-1 h-auto">Sign up</Button>
