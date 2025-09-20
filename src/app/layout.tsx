@@ -7,7 +7,7 @@ import { AuthProvider } from '@/components/auth-provider';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Paisa Pathshala',
+  title: 'Paisa Buddy',
   description: 'Your personal guide to financial literacy in India.',
 };
 

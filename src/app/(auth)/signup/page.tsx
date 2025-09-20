@@ -69,7 +69,7 @@ export default function SignUpPage() {
           </div>
           <CardTitle>Create an Account</CardTitle>
           <CardDescription>
-            Join Paisa Pathshala and start your financial journey.
+            Join Paisa Buddy and start your financial journey.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -160,12 +160,12 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
                   >
                     <Link href="/">
                       <Logo className="h-6 w-6" />
-                      <span className="sr-only">Paisa Pathshala</span>
+                      <span className="sr-only">Paisa Buddy</span>
                     </Link>
                   </Button>
                   <div className="flex flex-col">
                     <span className="text-base font-semibold">
-                      Paisa Pathshala
+                      Paisa Buddy
                     </span>
                     <span className="text-xs text-muted-foreground">
                       Financial Literacy
@@ -200,7 +200,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger />
                 <div className="flex items-center gap-2">
                   <Logo className="h-6 w-6" />
-                  <h1 className="text-lg font-semibold">Paisa Pathshala</h1>
+                  <h1 className="text-lg font-semibold">Paisa Buddy</h1>
                 </div>
               </header>
               <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">

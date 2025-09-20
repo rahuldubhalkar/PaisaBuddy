@@ -101,7 +101,7 @@ function WelcomeSection() {
     return (
          <div className="flex flex-col gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
-              Welcome {user ? user.displayName?.split(' ')[0] || 'back' : 'to Paisa Pathshala'}!
+              Welcome {user ? user.displayName?.split(' ')[0] || 'back' : 'to Paisa Buddy'}!
             </h1>
             <p className="text-muted-foreground">
               Your journey to financial freedom starts here. Explore our tools and
@@ -115,7 +115,7 @@ function AuthCallToAction() {
   return (
     <Card className="col-span-1 md:col-span-2 bg-primary/10 border-primary">
       <CardHeader>
-        <CardTitle>Join Paisa Pathshala</CardTitle>
+        <CardTitle>Join Paisa Buddy</CardTitle>
         <CardDescription>Create an account to save your progress, build your virtual portfolio, and track your achievements.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col sm:flex-row gap-4">
