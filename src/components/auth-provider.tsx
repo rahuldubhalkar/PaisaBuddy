@@ -82,24 +82,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    
-    const userDocRef = doc(db, "users", result.user.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-            uid: result.user.uid,
-            displayName: result.user.displayName,
-            email: result.user.email,
-            createdAt: new Date(),
-            learningProgress: {},
-            portfolio: {},
-            budget: {},
-        });
+    try {
+      const result = await signInWithPopup(auth, provider);
+      
+      const userDocRef = doc(db, "users", result.user.uid);
+      const userDoc = await getDoc(userDocRef);
+  
+      if (!userDoc.exists()) {
+          await setDoc(userDocRef, {
+              uid: result.user.uid,
+              displayName: result.user.displayName,
+              email: result.user.email,
+              createdAt: new Date(),
+              learningProgress: {},
+              portfolio: {},
+              budget: {},
+          });
+      }
+  
+      return result;
+    } catch (error: any) {
+      // Handle specific popup errors
+      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+        console.log('Google Sign-In popup was closed by the user.');
+        return; // Fail gracefully
+      }
+      // Attempt to get the credential from the error.
+      const credential = GoogleAuthProvider.credentialFromError(error);
+      if (credential) {
+        // You can use the credential to link accounts or other recovery flows.
+        console.error("Google Auth credential error:", credential);
+      }
+      // Re-throw other errors
+      throw error;
     }
-
-    return result;
   };
 
   const value = { user, loading, signIn, signUp, signOut, sendPasswordReset, signInWithGoogle };
