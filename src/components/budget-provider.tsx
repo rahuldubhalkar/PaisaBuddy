@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export interface Transaction {
   id: string;
@@ -35,8 +35,11 @@ interface BudgetContextType {
     totalIncome: number;
     totalExpense: number;
     balance: number;
+    unallocatedBalance: number;
     handleAddTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
     handleAddGoal: (goal: Omit<Goal, 'id' | 'savedAmount'>) => void;
+    addContributionToGoal: (goalId: string, amount: number) => void;
+    allocateSavingsToGoals: () => void;
 }
 
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
@@ -47,7 +50,16 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
 
     const totalIncome = transactions.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
     const totalExpense = transactions.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0);
+    const totalSavedForGoals = goals.reduce((sum, g) => sum + g.savedAmount, 0);
+    
+    // We assume the initial saved amounts were part of the balance, so we derive the starting cash.
+    const initialCash = 100000;
+    const currentCash = initialCash + totalIncome - totalExpense;
+
+    // The 'balance' is what's left after expenses from income, not from total cash.
     const balance = totalIncome - totalExpense;
+    const unallocatedBalance = balance > 0 ? balance - goals.reduce((sum, g) => sum + g.savedAmount, 0) : 0;
+
 
     const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'date'>) => {
         const newTransaction: Transaction = {
@@ -67,14 +79,54 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         setGoals(prev => [...prev, newGoal]);
     };
 
+    const addContributionToGoal = (goalId: string, amount: number) => {
+        if (amount <= 0) return;
+
+        setGoals(prevGoals => prevGoals.map(goal => {
+            if (goal.id === goalId) {
+                 const newSavedAmount = Math.min(goal.targetAmount, goal.savedAmount + amount);
+                 return { ...goal, savedAmount: newSavedAmount };
+            }
+            return goal;
+        }));
+    };
+
+    const allocateSavingsToGoals = () => {
+        if (unallocatedBalance <= 0) return;
+
+        let remainingToAllocate = unallocatedBalance;
+        
+        setGoals(prevGoals => {
+            const updatedGoals = prevGoals.map(goal => {
+                if (remainingToAllocate <= 0 || goal.savedAmount >= goal.targetAmount) {
+                    return goal;
+                }
+                
+                const needed = goal.targetAmount - goal.savedAmount;
+                const allocation = Math.min(needed, remainingToAllocate);
+                
+                remainingToAllocate -= allocation;
+                
+                return {
+                    ...goal,
+                    savedAmount: goal.savedAmount + allocation,
+                };
+            });
+            return updatedGoals;
+        });
+    };
+
     const value = {
         transactions,
         goals,
         totalIncome,
         totalExpense,
         balance,
+        unallocatedBalance,
         handleAddTransaction,
         handleAddGoal,
+        addContributionToGoal,
+        allocateSavingsToGoals,
     };
 
     return (

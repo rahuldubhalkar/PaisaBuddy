@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import { PlusCircle, Target } from 'lucide-react';
+import { PlusCircle, Target, PiggyBank, CheckCircle } from 'lucide-react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Tabs,
@@ -31,6 +32,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBudget } from '@/components/budget-provider';
+import { useToast } from '@/hooks/use-toast';
 
 
 function AddTransactionDialog() {
@@ -91,6 +93,60 @@ function AddTransactionDialog() {
     )
 }
 
+function AddContributionDialog({ goalId }: { goalId: string }) {
+    const { addContributionToGoal, unallocatedBalance } = useBudget();
+    const { toast } = useToast();
+    const [amount, setAmount] = React.useState('');
+    const [open, setOpen] = React.useState(false);
+
+    const handleSubmit = () => {
+        const contributionAmount = parseFloat(amount);
+        if (contributionAmount > 0) {
+            addContributionToGoal(goalId, contributionAmount);
+            toast({
+                title: "Contribution Added",
+                description: `₹${contributionAmount.toLocaleString('en-IN')} has been added to your goal.`,
+            });
+            setAmount('');
+            setOpen(false);
+        } else {
+             toast({
+                title: "Invalid Amount",
+                description: "Please enter a positive amount to contribute.",
+                variant: 'destructive',
+            });
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="ghost" size="sm">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Contribution
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Add Contribution</DialogTitle>
+                    <DialogDescription>Manually add funds to this goal.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="amount" className="text-right">Amount</Label>
+                        <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="col-span-3" placeholder="₹" />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                         <Button type="button" variant="secondary">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit" onClick={handleSubmit}>Contribute</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 function AddGoalDialog() {
     const { handleAddGoal } = useBudget();
     const [name, setName] = React.useState('');
@@ -138,7 +194,16 @@ function AddGoalDialog() {
 
 
 export default function BudgetPage() {
-  const { transactions, goals, totalIncome, totalExpense, balance } = useBudget();
+  const { transactions, goals, totalIncome, totalExpense, balance, unallocatedBalance, allocateSavingsToGoals } = useBudget();
+  const { toast } = useToast();
+
+  const handleAllocate = () => {
+    allocateSavingsToGoals();
+    toast({
+      title: "Savings Allocated",
+      description: "Your unallocated balance has been distributed to your goals.",
+    });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -159,7 +224,7 @@ export default function BudgetPage() {
                 <CardContent><p className="text-2xl font-bold text-red-500">₹{totalExpense.toLocaleString('en-IN')}</p></CardContent>
              </Card>
              <Card>
-                <CardHeader><CardTitle>Balance</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Net Balance</CardTitle></CardHeader>
                 <CardContent><p className="text-2xl font-bold">₹{balance.toLocaleString('en-IN')}</p></CardContent>
              </Card>
           </div>
@@ -201,20 +266,29 @@ export default function BudgetPage() {
         </TabsContent>
         <TabsContent value="goals" className="space-y-6">
             <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
+                <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>
                         <CardTitle>Your Financial Goals</CardTitle>
                         <CardDescription>Track your progress towards your savings goals.</CardDescription>
                     </div>
-                     <AddGoalDialog />
+                    <div className="flex gap-2">
+                        {unallocatedBalance > 0 && (
+                             <Button onClick={handleAllocate}>
+                                <PiggyBank className="mr-2 h-4 w-4"/> Allocate ₹{unallocatedBalance.toLocaleString('en-IN')}
+                            </Button>
+                        )}
+                        <AddGoalDialog />
+                    </div>
                 </CardHeader>
                 <CardContent className="grid gap-6 md:grid-cols-2">
                     {goals.map(goal => {
-                        const progress = (goal.savedAmount / goal.targetAmount) * 100;
+                        const progress = goal.targetAmount > 0 ? (goal.savedAmount / goal.targetAmount) * 100 : 0;
+                        const isCompleted = goal.savedAmount >= goal.targetAmount;
                         return (
                             <Card key={goal.id}>
-                                <CardHeader>
+                                <CardHeader className="flex flex-row justify-between items-start">
                                     <CardTitle>{goal.name}</CardTitle>
+                                    {isCompleted && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"><CheckCircle className="mr-1 h-3 w-3"/> Completed</Badge>}
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex justify-between items-end mb-1">
@@ -224,9 +298,18 @@ export default function BudgetPage() {
                                     <Progress value={progress} />
                                     <p className="text-right text-sm text-muted-foreground mt-1">{progress.toFixed(0)}% complete</p>
                                 </CardContent>
+                                <CardFooter>
+                                    <AddContributionDialog goalId={goal.id} />
+                                </CardFooter>
                             </Card>
                         )
                     })}
+                     {goals.length === 0 && (
+                        <div className="col-span-full flex flex-col items-center justify-center gap-4 text-center p-8 border-2 border-dashed rounded-lg">
+                            <p className="text-muted-foreground">You haven't set any financial goals yet.</p>
+                            <AddGoalDialog />
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </TabsContent>
