@@ -243,7 +243,7 @@ export default function AddCashPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="p-4 rounded-lg bg-secondary flex flex-col items-center gap-4">
-                <Image src="https://placehold.co/150x150/000000/FFFFFF.png?text=SCAN" alt="Mock QR Code" width={150} height={150} className="rounded-md" />
+                <Image src="https://media.istockphoto.com/id/1363666579/vector/qr-code-for-scanning-icon-in-smartphone-on-hand-screen-pay-digital-payment-and-online.jpg?s=612x612&w=0&k=20&c=p837s3eOfaR1o537JEL9KCqg_dVo37dtpb_wRRM8sWw=" alt="Mock QR Code" width={150} height={150} className="rounded-md bg-white p-2" />
                 <div className="text-center">
                   <p className="font-semibold">rahulldubhalkar-1@okaxis</p>
                   <p className="text-sm text-muted-foreground">Click to copy</p>
