@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Paisabuddy: Financial Literacy for Young India
 
 1.Problem Statement
@@ -9,7 +8,7 @@ Develop a mobile-first platform, Paisabuddy, designed to bridge the financial li
 * Protect themselves from digital financial fraud
 
 2.Team Details
-Project Title: Paisabuddy: Financial Literacy for Young India
+paisa: Paisabuddy: Financial Literacy for Young India
 Leader: Shreyas Lokhande
 Team Members:
   * Harshkumar Bhavsar
